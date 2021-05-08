@@ -3,7 +3,7 @@
 }
 
 .App-logo {
-  height: 40vmin;
+  /* height: 40vmin; */
   pointer-events: none;
 }
 
@@ -13,25 +13,25 @@
   }
 }
 
-#wallet-widget .circle-icon{
+#wallet-widget .circle-icon {
   width: 10px;
   margin-right: 8px;
 }
 
-#wallet-widget .circle-icon.ok{
+#wallet-widget .circle-icon.ok {
   fill: hsl(141, 71%, 48%);
 }
 
-#wallet-widget .circle-icon.fail{
+#wallet-widget .circle-icon.fail {
   fill: hsl(348, 100%, 61%);
 }
 
-#wallet-widget .circle-icon.warn{
+#wallet-widget .circle-icon.warn {
   fill: hsl(48, 100%, 67%);
 }
 
 #wallet-widget .address {
-  display:inline-block;
+  display: inline-block;
   white-space: nowrap;
   /*overflow: hidden;
   text-overflow: ellipsis;
@@ -59,6 +59,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

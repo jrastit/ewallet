@@ -2,12 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers'
 import logo from './logo.svg';
 import './App.css';
-import WalletWidget from './component/walletWidget'
+import AppNav from './AppNav'
+import {
+  EntityType,
+  loadEntity
+} from './type/entityType'
+import {
+  userIdGet,
+} from './chain/userChain'
 import AdminEntity from './section/adminEntity'
+import AdminUser from './section/adminUser'
 import BoxWidget from './component/boxWidget'
-import Jumbotron from 'react-bootstrap/Jumbotron';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import DisplayEntityOperationList from './component/display/displayEntityOperationList'
+import DisplayUserList from './component/display/displayUserList'
+import CreateEntityWidget from './component/admin/createEntityWidget'
 import {
   getAddress,
   getWallet,
@@ -28,63 +40,101 @@ function App() {
     wallet: undefined,
     error: undefined,
   })
+  const [entity, setEntity] = useState<EntityType | null | undefined>(null)
+  const [userId, setUserId] = useState(-1)
 
-  const updateAddress = (_address : string, _wallet : ethers.Wallet | undefined) => {
+  if (walletInfo.wallet && entity) {
+    userIdGet(walletInfo.address, entity).then(
+      (_userId) => {
+        if (_userId !== userId) {
+          setUserId(_userId)
+        }
+      }
+    )
+  }
+
+  const updateAddress = (_address: string, _wallet: ethers.Wallet | undefined) => {
     console.log("address", _address)
     if (walletInfo.address !== _address) {
       setWalletInfo({ address: _address, wallet: _wallet, error: undefined })
     }
   }
 
-  const updateWallet = (networkName : string, _wallet : ethers.Wallet) => {
+  const updateWallet = (networkName: string, _wallet: ethers.Wallet) => {
     getAddress(networkName, _wallet, updateAddress)
   }
 
-  const updateError = (_error : string) => {
+  const updateError = (_error: string) => {
     console.log("error : ", _error)
     setWalletInfo({ address: "error", wallet: undefined, error: _error })
   }
 
+  if (!entity) {
+    const storageEntity = loadEntity()
+    if (storageEntity) setEntity(storageEntity)
+  }
+
   useEffect(() => {
-        if (!walletInfo.wallet){
-            getWallet(networkName, updateWallet, updateError)
-            addHooks()
-        }
-    })
+    if (!walletInfo.wallet) {
+      getWallet(networkName, updateWallet, updateError)
+      addHooks()
+    }
+  })
 
   //const wallet = walletInfo.wallet
   //const provider = wallet ? wallet.provider : undefined
 
   return (
     <div className="App">
-      <header className="App-header">
-        <Container>
-        {!!isHome &&
-          <Jumbotron>
+      <Container>
+        {!isHome && <AppNav
+          setIsHome={setIsHome}
+          setEntity={setEntity}
+          entity={entity}
+          networkName={networkName}
+          address={walletInfo.address}
+          error={walletInfo.error}
+        />}
+
+        {(!!isHome || !entity) &&
+          <BoxWidget>
             <img src={logo} className="App-logo" alt="logo" />
-            <BoxWidget title="EWallet">
-            <p>Non-custodial wallet for entreprise</p>
-            <Button onClick={() => setIsHome(0)}>
-              Enter
-            </Button>
-            </BoxWidget>
-          </Jumbotron>
+          </BoxWidget>
         }
-        {!isHome &&
+        {!!isHome &&
           <div>
-            <BoxWidget>
-              <Button onClick={() => setIsHome(1)}>Home</Button>
+            <BoxWidget title="EWallet">
+              <p>Non-custodial wallet for entreprise</p>
+              <Button onClick={() => setIsHome(0)}>
+                Enter
+              </Button>
             </BoxWidget>
-            <BoxWidget title="Wallet">
-              <WalletWidget address={walletInfo.address} error={walletInfo.error}/>
-            </BoxWidget>
-            <div>
-              <AdminEntity/>
-            </div>
           </div>
         }
-        </Container>
-      </header>
+
+        {!isHome && !entity && !!walletInfo.wallet &&
+          <BoxWidget title='Create Entity'>
+            <CreateEntityWidget
+              setEntity={setEntity}
+              networkName={networkName}
+              address={walletInfo.address}
+            />
+          </BoxWidget>
+        }
+        {!isHome && !!entity && userId >= 0 &&
+          <Row>
+            <Col><AdminEntity userId={userId} entity={entity} /></Col>
+            <Col><AdminUser userId={userId} entity={entity} /></Col>
+            <Col><BoxWidget title='Entity operation'>
+              <DisplayEntityOperationList entity={entity} />
+            </BoxWidget></Col>
+            <Col><BoxWidget title='Entity user'>
+              <DisplayUserList entity={entity} />
+            </BoxWidget></Col>
+          </Row>
+        }
+      </Container>
+
     </div>
   );
 }

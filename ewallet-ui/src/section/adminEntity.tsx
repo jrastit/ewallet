@@ -1,21 +1,26 @@
-import React, { useState } from 'react'
-import CreateEntityWidget from '../component/admin/createEntityWidget'
-import {EntityType} from '../type/entityType'
+import React from 'react'
+import { EntityType } from '../type/entityType'
 import BoxWidget from '../component/boxWidget'
+import DisplayEntityBalance from '../component/display/displayEntityBalance'
+import FundEntityWidget from '../component/admin/fundEntityWidget'
+import WithdrawEntityWidget from '../component/admin/withdrawEntityWidget'
 
-const AdminEntity = () => {
-
-  const [entity, setEntity] = useState<EntityType | undefined>()
-
+const AdminEntity = (props: {
+  userId: number,
+  entity: EntityType,
+}) => {
   return (
-    <BoxWidget title='Admin Entity'>
-        <BoxWidget>
-          Entity : {!!entity && <label>{entity.name}</label>}
-        </BoxWidget>
-        <BoxWidget title='Create Entity'>
-          <CreateEntityWidget setEntity={setEntity}/>
-        </BoxWidget>
-    </BoxWidget>
+    <div>
+      <BoxWidget title={"Entity : " + props.entity.name}>
+        {!!props.entity && <div><DisplayEntityBalance entity={props.entity} /></div>}
+      </BoxWidget>
+      <BoxWidget title='Fund Entity'>
+        <FundEntityWidget entity={props.entity} userId={props.userId} />
+      </BoxWidget>
+      <BoxWidget title='Withdraw from Entity'>
+        <WithdrawEntityWidget entity={props.entity} userId={props.userId} />
+      </BoxWidget>
+    </div>
   )
 }
 

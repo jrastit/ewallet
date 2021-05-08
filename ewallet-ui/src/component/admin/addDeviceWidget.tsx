@@ -3,18 +3,16 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import { EntityType } from '../../type/entityType'
-import { entityCreate } from '../../chain/entityChain'
+import { deviceAdd } from '../../chain/userChain'
 
-const CreateEntityWidget = (props: {
-  setEntity: (entity: EntityType) => void,
-  networkName: string,
-  address: string,
+const AddDeviceWidget = (props: {
+  userId: number
+  entity: EntityType,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
     name: '',
-    firstName: '',
-    lastName: '',
+    wallet: '',
   })
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
@@ -28,14 +26,12 @@ const CreateEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    entityCreate(
+    deviceAdd(
+      props.userId,
+      props.entity,
       fieldValue.name,
-      props.networkName,
-      props.address,
-      fieldValue.firstName,
-      fieldValue.lastName,
+      fieldValue.wallet,
     ).then(entity => {
-      props.setEntity(entity)
       setSubmit(2)
     }).catch((error) => {
       setError(error.message)
@@ -53,28 +49,22 @@ const CreateEntityWidget = (props: {
   else if (submit === 0) return (
     <Form onSubmit={formSubmit}>
       <Form.Group>
-        <Form.Label>Name of the entity:</Form.Label>
-        <Form.Control type="text" name="name" value={fieldValue.name} onChange={handleChange} />
+        <Form.Label>Name:</Form.Label>
+        <Form.Control type="text" name="name" value={fieldValue.firstName} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
-        <Form.Label>Your first name:</Form.Label>
-        <Form.Control type="text" name="firstName" value={fieldValue.firstName} onChange={handleChange} />
+        <Form.Label>Wallet address:</Form.Label>
+        <Form.Control type="text" name="wallet" value={fieldValue.wallet} onChange={handleChange} />
       </Form.Group>
-      <Form.Group>
-        <Form.Label>Your last name:</Form.Label>
-        <Form.Control type="text" name="lastName" value={fieldValue.lastName} onChange={handleChange} />
-      </Form.Group>
-      {fieldValue.name && fieldValue.firstName &&
+      {fieldValue.name && fieldValue.wallet &&
         <Form.Group><Button variant="info" type="submit">Ok</Button></Form.Group>
       }
     </Form>
   )
   else if (submit === 1) return (
-    <label>Entity creation...</label>
+    <label>Device creation...</label>
   )
-  else return (
-    <label>Entity created</label>
-  )
+  else return (<label>Device created</label>)
 }
 
-export default CreateEntityWidget
+export default AddDeviceWidget
