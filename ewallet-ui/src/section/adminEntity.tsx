@@ -4,6 +4,8 @@ import BoxWidget from '../component/boxWidget'
 import DisplayEntityBalance from '../component/display/displayEntityBalance'
 import FundEntityWidget from '../component/admin/fundEntityWidget'
 import WithdrawEntityWidget from '../component/admin/withdrawEntityWidget'
+import DisplayUserList from '../component/display/displayUserList'
+import AddUserWidget from '../component/admin/addUserWidget'
 
 const AdminEntity = (props: {
   userId: number,
@@ -19,6 +21,12 @@ const AdminEntity = (props: {
       </BoxWidget>
       <BoxWidget title='Withdraw from Entity'>
         <WithdrawEntityWidget entity={props.entity} userId={props.userId} />
+      </BoxWidget>
+      <BoxWidget title='Entity user'>
+        <DisplayUserList entity={props.entity} />
+      </BoxWidget>
+      <BoxWidget title='Add user'>
+        <AddUserWidget entity={props.entity} />
       </BoxWidget>
     </div>
   )

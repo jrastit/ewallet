@@ -62,7 +62,7 @@ const getAddress = (
       setAddress(address, wallet)
     }).catch(
       err => {
-        console.log("error in get address ", err)
+        console.error("error in get address ", err)
         setAddress("error", undefined)
       }
     )

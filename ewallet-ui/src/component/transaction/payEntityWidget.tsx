@@ -2,17 +2,19 @@ import React, { useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import TokenSelectWidget from '../util/tokenSelectWidget'
-import { entityDepositFund } from '../../chain/entityChain'
+import { entityPay } from '../../chain/entityChain'
 import { EntityType } from '../../type/entityType'
 
-const FundEntityWidget = (props: {
-  entity: EntityType,
+const PayEntityWidget = (props: {
   userId: number,
+  entity: EntityType,
+  address: string,
 }) => {
-
   const [fieldValue, setFieldValue] = useState<any>({
     token: '',
     amount: '',
+    reason: '',
+    reference : '',
   })
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
@@ -26,11 +28,14 @@ const FundEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    entityDepositFund(
+    entityPay(
       props.userId,
       props.entity,
       fieldValue.amount,
       fieldValue.token,
+      fieldValue.name,
+      fieldValue.reason,
+      props.address,
     ).then(() => setSubmit(2)).catch(error => setError(error.message))
     event.preventDefault()
     setSubmit(1)
@@ -59,18 +64,36 @@ const FundEntityWidget = (props: {
           onChange={handleChange}
         />
       </Form.Group>
-      {fieldValue.token && fieldValue.amount &&
+      <Form.Group>
+        <Form.Label>Reason</Form.Label>
+        <Form.Control
+          type="text"
+          name="reason"
+          value={fieldValue.reason}
+          onChange={handleChange}
+        />
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>Name</Form.Label>
+        <Form.Control
+          type="text"
+          name="name"
+          value={fieldValue.name}
+          onChange={handleChange}
+        />
+      </Form.Group>
+      {fieldValue.token && fieldValue.amount && fieldValue.name && fieldValue.reason &&
         <Form.Group><Button variant="info" type="submit">Submit</Button></Form.Group>
       }
     </Form>
   )
   else if (submit === 1) return (
-    <label>Depositing Fund ...</label>
+    <label>Processing tranaction ...</label>
   )
   else return (<div>
-    <label>Fund deposited </label>&nbsp;&nbsp;
+    <label>Transaction validated</label>&nbsp;&nbsp;
     <Button variant="primary" onClick={() => { setFieldValue(0); setSubmit(0) }}>Ok</Button>
   </div>)
 }
 
-export default FundEntityWidget
+export default PayEntityWidget

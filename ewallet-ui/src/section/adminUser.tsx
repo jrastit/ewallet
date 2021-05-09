@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { ethers } from 'ethers'
 import BoxWidget from '../component/boxWidget'
 import DisplayDeviceList from '../component/display/displayDeviceList'
-import AddUserWidget from '../component/admin/addUserWidget'
+import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
 import { EntityType } from '../type/entityType'
 import { UserType } from '../type/userType'
@@ -47,7 +46,8 @@ const AdminUser = (props: {
       {user &&
         <div>
           <BoxWidget title={"User : " + user.firstName + " " + user.lastName}>
-            {ethers.utils.formatEther(user.balance)}
+            Personal account :
+            <DisplayBalanceWidget balance={user.balance} entity={props.entity}/>
           </BoxWidget>
         </div>
       }
@@ -57,9 +57,7 @@ const AdminUser = (props: {
       <BoxWidget title='Device list'>
         <DisplayDeviceList entity={props.entity} userId={props.userId} />
       </BoxWidget>
-      <BoxWidget title='Add user'>
-        <AddUserWidget entity={props.entity} />
-      </BoxWidget>
+
     </div>
   )
 }

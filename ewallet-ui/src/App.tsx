@@ -18,8 +18,8 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import DisplayEntityOperationList from './component/display/displayEntityOperationList'
-import DisplayUserList from './component/display/displayUserList'
 import CreateEntityWidget from './component/admin/createEntityWidget'
+import PayEntity from './component/transaction/payEntityWidget'
 import {
   getAddress,
   getWallet,
@@ -50,7 +50,7 @@ function App() {
           setUserId(_userId)
         }
       }
-    )
+    ).catch((err) => setUserId(-1))
   }
 
   const updateAddress = (_address: string, _wallet: ethers.Wallet | undefined) => {
@@ -65,7 +65,7 @@ function App() {
   }
 
   const updateError = (_error: string) => {
-    console.log("error : ", _error)
+    console.error("error : ", _error)
     setWalletInfo({ address: "error", wallet: undefined, error: _error })
   }
 
@@ -125,12 +125,23 @@ function App() {
           <Row>
             <Col><AdminEntity userId={userId} entity={entity} /></Col>
             <Col><AdminUser userId={userId} entity={entity} /></Col>
-            <Col><BoxWidget title='Entity operation'>
-              <DisplayEntityOperationList entity={entity} />
-            </BoxWidget></Col>
-            <Col><BoxWidget title='Entity user'>
-              <DisplayUserList entity={entity} />
-            </BoxWidget></Col>
+            <Col>
+              <BoxWidget title='Pay entity'>
+                <PayEntity userId={userId} entity={entity} address={walletInfo.address}/>
+              </BoxWidget>
+              <BoxWidget title='Entity operation'>
+                <DisplayEntityOperationList entity={entity} />
+              </BoxWidget>
+            </Col>
+          </Row>
+        }
+        {!isHome && !!entity && userId < 0 &&
+          <Row>
+            <Col>
+              <BoxWidget title='Pay entity'>
+                <PayEntity userId={userId} entity={entity} address={walletInfo.address}/>
+              </BoxWidget>
+            </Col>
           </Row>
         }
       </Container>

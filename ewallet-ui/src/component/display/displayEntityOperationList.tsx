@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react'
-import { ethers } from 'ethers'
 import { entityGetOperationList } from '../../chain/entityChain'
 import { EntityType, EntityOperationType } from '../../type/entityType'
+import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
@@ -33,8 +33,13 @@ const DisplayEntityOperation = (props: { entity: EntityType }) => {
 
   const displayOperation = (operation: EntityOperationType) => {
     return (
-      <ListGroup.Item key={operation.blockNumber.toString()} variant={operation.amount.lt(0) ? "danger" : "success"}>
-        {operation.message} {ethers.utils.formatEther(operation.amount)} ETH
+      <ListGroup.Item
+        key={operation.blockNumber.toString()}
+        variant={operation.balance[0] &&
+          operation.balance[0].balance.lt(0) ? "danger" : "success"}
+      >
+        {operation.message}
+        <DisplayBalanceWidget balance={operation.balance} entity={props.entity}/>
       </ListGroup.Item>
     )
   }
@@ -52,8 +57,6 @@ const DisplayEntityOperation = (props: { entity: EntityType }) => {
       </ListGroup>
     )
   }
-
-
 
   return (<div>
     {error ? error : displayOperationList(operationList)}

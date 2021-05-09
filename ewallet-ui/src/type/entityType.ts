@@ -1,4 +1,6 @@
 import { ethers } from 'ethers'
+import { BalanceType, TokenType } from './tokenType'
+import { balanceToString, balanceFromString } from './tokenType'
 import { UserType } from './userType'
 import { userToString, userFromString } from './userType'
 
@@ -6,6 +8,7 @@ type EntityType = {
   name: string
   contractAddress: string
   networkName: string
+  token: Array<TokenType>
   localEntity?: LocalEntityType
 }
 
@@ -14,6 +17,7 @@ const entityToString = (entity: EntityType | undefined) => {
     name: entity.name,
     contractAddress: entity.contractAddress,
     networkName: entity.networkName,
+    token: entity.token,
     localEntity: localEntityToString(entity.localEntity)
   }
 }
@@ -23,6 +27,7 @@ const entityFromString = (entity: any) => {
     name: entity.name,
     contractAddress: entity.contractAddress,
     networkName: entity.networkName,
+    token: entity.token,
     localEntity: localEntityFromString(entity.localEntity)
   }
 }
@@ -32,7 +37,7 @@ type EntityOperationType = {
   userId: number,
   message: string,
   category: string,
-  amount: ethers.BigNumber,
+  balance: Array<BalanceType>,
   date: Date
 }
 
@@ -42,7 +47,7 @@ const entityOperationToString = (operation: EntityOperationType | undefined) => 
     userId: operation.userId,
     message: operation.message,
     category: operation.category,
-    amount: operation.amount.toString(),
+    balance: operation.balance.map(balanceToString),
     date: operation.date.toString(),
   }
 }
@@ -53,14 +58,14 @@ const entityOperationFromString = (operation: any) => {
     userId: operation.userId,
     message: operation.message,
     category: operation.category,
-    amount: ethers.BigNumber.from(operation.amount),
+    balance: operation.balance.map(balanceFromString),
     date: Date.parse(operation.date),
   }
 }
 
 type LocalEntityType = {
   blockNumber: ethers.BigNumber,
-  balance: ethers.BigNumber,
+  balance: Array<BalanceType>,
   operation: Array<EntityOperationType>,
   userId: number,
   user: Array<UserType>,
@@ -69,7 +74,7 @@ type LocalEntityType = {
 const localEntityToString = (localEntity: LocalEntityType | undefined) => {
   if (localEntity) return {
     blockNumber: localEntity.blockNumber.toString(),
-    balance: localEntity.balance.toString(),
+    balance: localEntity.balance.map(balanceToString),
     operation: localEntity.operation.map(entityOperationToString),
     userId: localEntity.userId,
     user: localEntity.user.map(userToString),
@@ -79,7 +84,7 @@ const localEntityToString = (localEntity: LocalEntityType | undefined) => {
 const localEntityFromString = (localEntity: any) => {
   if (localEntity) return {
     blockNumber: ethers.BigNumber.from(localEntity.blockNumber),
-    balance: ethers.BigNumber.from(localEntity.balance),
+    balance: localEntity.balance.map(balanceFromString),
     operation: localEntity.operation.map(entityOperationFromString),
     userId: localEntity.userId,
     user: localEntity.user.map(userFromString),
@@ -100,7 +105,13 @@ const saveEntity = (entity: EntityType | undefined) => {
 }
 
 const loadEntity = () => {
-  return entityFromJson(localStorage.getItem("entity"))
+  try{
+    return entityFromJson(localStorage.getItem("entity"))
+  }catch(error){
+    console.error(error)
+    deleteEntity()
+  }
+
 }
 
 const deleteEntity = () => {

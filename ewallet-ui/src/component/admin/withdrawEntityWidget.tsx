@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { ethers } from 'ethers'
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import TokenSelectWidget from '../util/tokenSelectWidget'
 import { entityWithdrawFund } from '../../chain/entityChain'
 import { EntityType } from '../../type/entityType'
 
@@ -11,6 +11,7 @@ const WithdrawEntityWidget = (props: {
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
+    token: '',
     amount: '',
   })
   const [submit, setSubmit] = useState(0)
@@ -28,7 +29,8 @@ const WithdrawEntityWidget = (props: {
     entityWithdrawFund(
       props.userId,
       props.entity,
-      ethers.utils.parseEther(fieldValue.amount)
+      fieldValue.amount,
+      fieldValue.token,
     ).then(() => setSubmit(2)).catch(error => setError(error.message))
     event.preventDefault()
     setSubmit(1)
@@ -43,19 +45,25 @@ const WithdrawEntityWidget = (props: {
   else if (submit === 0) return (
     <Form onSubmit={formSubmit}>
       <Form.Group>
-        <Form.Label>Amount in ETH:</Form.Label>
+        <Form.Label>Amount in</Form.Label>
+        <TokenSelectWidget
+          name="token"
+          value={fieldValue.token}
+          onChange={handleChange}
+          entity={props.entity}
+        />
         <Form.Control type="text" name="amount" value={fieldValue.amount} onChange={handleChange} />
       </Form.Group>
-      {fieldValue.amount &&
+      {fieldValue.token && fieldValue.amount &&
         <Form.Group><Button variant="info" type="submit">Submit</Button></Form.Group>
       }
     </Form>
   )
   else if (submit === 1) return (
-    <label>Withdrawing Fund {fieldValue.amount} ETH ...</label>
+    <label>Withdrawing Fund...</label>
   )
   else return (<div>
-    <label>Withdraw Fund executed {fieldValue.amount} ETH</label>&nbsp;&nbsp;
+    <label>Withdraw Fund executed</label>&nbsp;&nbsp;
     <Button variant="primary" onClick={() => { setFieldValue(0); setSubmit(0) }}>Ok</Button>
   </div>)
 }

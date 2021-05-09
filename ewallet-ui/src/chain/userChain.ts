@@ -1,5 +1,3 @@
-//import {ethers} from 'ethers'
-//import { UserType, UserDeviceType } from '../type/userType'
 import { EntityType } from '../type/entityType'
 import { saveEntity } from '../type/entityType'
 import { ethers } from 'ethers'
@@ -75,7 +73,7 @@ const userCreate = async (
       userId: entity.localEntity.userId,
       firstName,
       lastName,
-      balance: ethers.BigNumber.from(0),
+      balance: [],
       device: [],
       disable: false,
     })

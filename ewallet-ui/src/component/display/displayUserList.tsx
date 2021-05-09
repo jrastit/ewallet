@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react'
-import { ethers } from 'ethers'
 import { entityGetUserList } from '../../chain/entityChain'
 import { EntityType } from '../../type/entityType'
 import { UserType } from '../../type/userType'
 import { userListToJson, userListFromJson } from '../../type/userType'
+import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
@@ -37,7 +37,11 @@ const DisplayUserList = (props: { entity: EntityType }) => {
   const displayUser = (user: UserType) => {
     return (
       <ListGroup.Item key={user.userId} variant={user.disable ? "danger" : "success"}>
-        {user.firstName} {user.lastName} {ethers.utils.formatEther(user.balance)} ETH
+        {user.firstName} {user.lastName}
+        <DisplayBalanceWidget
+          balance={user.balance}
+          entity={props.entity}
+          />
       </ListGroup.Item>
     )
   }

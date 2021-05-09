@@ -1,4 +1,5 @@
-import { ethers } from 'ethers'
+import { BalanceType } from './tokenType'
+import { balanceToString, balanceFromString } from './tokenType'
 
 type UserDeviceType = {
   name: string
@@ -10,7 +11,7 @@ type UserType = {
   userId: number
   firstName: string
   lastName: string | undefined
-  balance: ethers.BigNumber,
+  balance: Array<BalanceType>
   device: Array<UserDeviceType>
   disable: boolean
 }
@@ -21,7 +22,7 @@ const userToString = (user: UserType) => {
       userId: user.userId,
       firstName: user.firstName,
       lastName: user.lastName,
-      balance: user.balance.toString(),
+      balance: user.balance.map(balanceToString),
       device: user.device,
       disable: user.disable,
     }
@@ -34,7 +35,7 @@ const userFromString = (user: any) => {
       userId: user.userId,
       firstName: user.firstName,
       lastName: user.lastName,
-      balance: ethers.BigNumber.from(user.balance),
+      balance: user.balance.map(balanceFromString),
       device: user.device,
       disable: user.disable,
     }

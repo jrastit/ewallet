@@ -68,7 +68,10 @@ const AddUserWidget = (props: {
   else if (submit === 1) return (
     <label>User creation...</label>
   )
-  else return (<label>User created</label>)
+  else return (<div>
+    <label>User created</label>&nbsp;&nbsp;
+    <Button variant="primary" onClick={() => { setFieldValue(0); setSubmit(0) }}>Ok</Button>
+  </div>)
 }
 
 export default AddUserWidget
