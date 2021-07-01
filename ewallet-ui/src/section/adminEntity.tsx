@@ -1,5 +1,4 @@
-import React from 'react'
-import { EntityType } from '../type/entityType'
+import { Entity } from '../class/Entity'
 import BoxWidget from '../component/boxWidget'
 import DisplayEntityBalance from '../component/display/displayEntityBalance'
 import FundEntityWidget from '../component/admin/fundEntityWidget'
@@ -9,7 +8,7 @@ import AddUserWidget from '../component/admin/addUserWidget'
 
 const AdminEntity = (props: {
   userId: number,
-  entity: EntityType,
+  entity: Entity,
 }) => {
   return (
     <div>

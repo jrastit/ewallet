@@ -1,20 +1,19 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import TokenSelectWidget from '../util/tokenSelectWidget'
-import { entityPay } from '../../chain/entityChain'
-import { EntityType } from '../../type/entityType'
+import { Entity } from '../../class/Entity'
 
 const PayEntityWidget = (props: {
   userId: number,
-  entity: EntityType,
+  entity: Entity,
   address: string,
 }) => {
   const [fieldValue, setFieldValue] = useState<any>({
     token: '',
     amount: '',
-    reason: '',
-    reference : '',
+    subject: '',
+    reference: '',
   })
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
@@ -28,13 +27,12 @@ const PayEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    entityPay(
+    props.entity.pay(
       props.userId,
-      props.entity,
       fieldValue.amount,
       fieldValue.token,
       fieldValue.name,
-      fieldValue.reason,
+      fieldValue.subject,
       props.address,
     ).then(() => setSubmit(2)).catch(error => setError(error.message))
     event.preventDefault()
@@ -68,8 +66,8 @@ const PayEntityWidget = (props: {
         <Form.Label>Reason</Form.Label>
         <Form.Control
           type="text"
-          name="reason"
-          value={fieldValue.reason}
+          name="subject"
+          value={fieldValue.subject}
           onChange={handleChange}
         />
       </Form.Group>
@@ -82,7 +80,7 @@ const PayEntityWidget = (props: {
           onChange={handleChange}
         />
       </Form.Group>
-      {fieldValue.token && fieldValue.amount && fieldValue.name && fieldValue.reason &&
+      {fieldValue.token && fieldValue.amount && fieldValue.name && fieldValue.subject &&
         <Form.Group><Button variant="info" type="submit">Submit</Button></Form.Group>
       }
     </Form>

@@ -1,5 +1,3 @@
-import React from 'react'
-
 const walletLearnUrl = 'https://ethereum.org/use/#_3-what-is-a-wallet' +
   '-and-which-one-should-i-use'
 

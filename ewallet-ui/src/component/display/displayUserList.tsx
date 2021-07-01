@@ -1,19 +1,18 @@
 
-import React, { useState, useEffect } from 'react'
-import { entityGetUserList } from '../../chain/entityChain'
-import { EntityType } from '../../type/entityType'
+import { useState, useEffect } from 'react'
+import { Entity } from '../../class/Entity'
 import { UserType } from '../../type/userType'
 import { userListToJson, userListFromJson } from '../../type/userType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
-const DisplayUserList = (props: { entity: EntityType }) => {
+const DisplayUserList = (props: { entity: Entity }) => {
   const [userList, setUserList] = useState<Array<UserType>>([])
   const [error, setError] = useState<string | undefined>()
 
-  const updateUserList = (entity: EntityType) => {
-    entityGetUserList(entity).then((_userList) => {
+  const updateUserList = (entity: Entity) => {
+    entity.getUserList().then((_userList) => {
       const _userListJSON = userListToJson(_userList)
       if (!userList || userListToJson(userList) !== _userListJSON) {
         setUserList(userListFromJson(_userListJSON))
@@ -37,11 +36,11 @@ const DisplayUserList = (props: { entity: EntityType }) => {
   const displayUser = (user: UserType) => {
     return (
       <ListGroup.Item key={user.userId} variant={user.disable ? "danger" : "success"}>
-        {user.firstName} {user.lastName}
+        {user.userName}
         <DisplayBalanceWidget
           balance={user.balance}
           entity={props.entity}
-          />
+        />
       </ListGroup.Item>
     )
   }

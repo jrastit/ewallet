@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-import { EntityType } from '../../type/entityType'
-import { deviceAdd } from '../../chain/userChain'
+import { Entity } from '../../class/Entity'
 
 const AddDeviceWidget = (props: {
   userId: number
-  entity: EntityType,
+  entity: Entity,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
@@ -26,12 +25,11 @@ const AddDeviceWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    deviceAdd(
+    props.entity.addDeviceForUserId(
       props.userId,
-      props.entity,
       fieldValue.name,
       fieldValue.wallet,
-    ).then(entity => {
+    ).then(() => {
       setSubmit(2)
     }).catch((error) => {
       setError(error.message)
@@ -50,7 +48,7 @@ const AddDeviceWidget = (props: {
     <Form onSubmit={formSubmit}>
       <Form.Group>
         <Form.Label>Name:</Form.Label>
-        <Form.Control type="text" name="name" value={fieldValue.firstName} onChange={handleChange} />
+        <Form.Control type="text" name="name" value={fieldValue.name} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
         <Form.Label>Wallet address:</Form.Label>

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Toast from 'react-bootstrap/Toast';
 
 const BoxWidget = (props: { title?: string, children: any }) => {

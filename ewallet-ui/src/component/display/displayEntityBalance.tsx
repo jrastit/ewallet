@@ -1,18 +1,17 @@
 
-import React, { useState, useEffect } from 'react'
-import { entityGetBalance } from '../../chain/entityChain'
-import { balanceListToJson, balanceListFromJson } from '../../type/tokenType'
+import { useState, useEffect } from 'react'
+import { balanceListToJson, balanceListFromJson } from '../../type/balanceType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
-import { EntityType } from '../../type/entityType'
-import { BalanceType } from '../../type/tokenType'
+import { Entity } from '../../class/Entity'
+import { BalanceType } from '../../type/balanceType'
 
 
-const DisplayEntityBalance = (props: { entity: EntityType }) => {
+const DisplayEntityBalance = (props: { entity: Entity }) => {
   const [balance, setBalance] = useState<Array<BalanceType> | undefined>()
   const [error, setError] = useState<string | undefined>()
 
-  const updateBalance = (entity: EntityType) => {
-    entityGetBalance(entity).then((_balance) => {
+  const updateBalance = (entity: Entity) => {
+    entity.getBalance().then((_balance) => {
       const _balanceJson = balanceListToJson(_balance)
       if (!balance || _balanceJson !== balanceListToJson(balance))
         setBalance(balanceListFromJson(_balanceJson))
@@ -34,7 +33,7 @@ const DisplayEntityBalance = (props: { entity: EntityType }) => {
 
   return (<div>
     {error ? error : balance ?
-      <DisplayBalanceWidget balance={balance} entity={props.entity}/> :
+      <DisplayBalanceWidget balance={balance} entity={props.entity} /> :
       '--'
     }
   </div>)

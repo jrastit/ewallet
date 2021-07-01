@@ -1,32 +1,35 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import SelectWidget from '../selectWidget'
-import { EntityType } from '../../type/entityType'
-import { entityGetTokenList } from '../../chain/entityChain'
+import { Entity } from '../../class/Entity'
 
-const TokenSelectWidget = (props:{
-  name : string,
-  value : string,
-  onChange : (event : any) => void,
-  entity : EntityType,
+const TokenSelectWidget = (props: {
+  name: string,
+  value: string,
+  onChange: (event: any) => void,
+  entity: Entity,
 }) => {
 
   const [option, setOption] = useState<Array<{
-    name:string,
-    value:string,
+    name: string,
+    value: string,
   }>>([])
 
   useEffect(() => {
-    if (option.length === 0){
-      entityGetTokenList(props.entity).then(tokenList =>{
-        const _option = tokenList.map(token => {return {
-          value : token.name,
-          name : token.symbol,
-        }})
+    if (option.length === 0) {
+      props.entity.getTokenList().then(tokenList => {
+        const _option = tokenList.map(token => {
+          return {
+            value: token.name,
+            name: token.symbol,
+          }
+        })
         if (_option[0])
-          props.onChange({target:{
-            name : props.name,
-            value : _option[0].value,
-          }})
+          props.onChange({
+            target: {
+              name: props.name,
+              value: _option[0].value,
+            }
+          })
         setOption(_option)
       })
     }

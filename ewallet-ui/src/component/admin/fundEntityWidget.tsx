@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import TokenSelectWidget from '../util/tokenSelectWidget'
-import { entityDepositFund } from '../../chain/entityChain'
-import { EntityType } from '../../type/entityType'
+import { Entity } from '../../class/Entity'
 
 const FundEntityWidget = (props: {
-  entity: EntityType,
+  entity: Entity,
   userId: number,
 }) => {
 
@@ -26,9 +25,8 @@ const FundEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    entityDepositFund(
+    props.entity.depositFund(
       props.userId,
-      props.entity,
       fieldValue.amount,
       fieldValue.token,
     ).then(() => setSubmit(2)).catch(error => setError(error.message))

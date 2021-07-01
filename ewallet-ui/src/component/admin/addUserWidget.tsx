@@ -1,17 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-import { EntityType } from '../../type/entityType'
-import { userCreate } from '../../chain/userChain'
+import { Entity } from '../../class/Entity'
 
 const AddUserWidget = (props: {
-  entity: EntityType,
+  entity: Entity,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
-    firstName: '',
-    lastName: '',
+    userName: '',
+    deviceName: '',
     wallet: '',
   })
   const [submit, setSubmit] = useState(0)
@@ -26,12 +25,11 @@ const AddUserWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    userCreate(
-      props.entity,
+    props.entity.addUser(
       fieldValue.wallet,
-      fieldValue.firstName,
-      fieldValue.lastName,
-    ).then(entity => {
+      fieldValue.userName,
+      fieldValue.deviceName,
+    ).then(() => {
       setSubmit(2)
     }).catch((error) => {
       setError(error.message)
@@ -49,18 +47,18 @@ const AddUserWidget = (props: {
   else if (submit === 0) return (
     <Form onSubmit={formSubmit}>
       <Form.Group>
-        <Form.Label>First name:</Form.Label>
-        <Form.Control type="text" name="firstName" value={fieldValue.firstName} onChange={handleChange} />
+        <Form.Label>User name:</Form.Label>
+        <Form.Control type="text" name="userName" value={fieldValue.userName} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
-        <Form.Label>Last name:</Form.Label>
-        <Form.Control type="text" name="lastName" value={fieldValue.lastName} onChange={handleChange} />
+        <Form.Label>Device name:</Form.Label>
+        <Form.Control type="text" name="deviceName" value={fieldValue.deviceName} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
         <Form.Label>Wallet address:</Form.Label>
         <Form.Control type="text" name="wallet" value={fieldValue.wallet} onChange={handleChange} />
       </Form.Group>
-      {fieldValue.firstName && fieldValue.wallet &&
+      {fieldValue.userName && fieldValue.deviceName && fieldValue.wallet &&
         <Form.Group><Button variant="info" type="submit">Ok</Button></Form.Group>
       }
     </Form>

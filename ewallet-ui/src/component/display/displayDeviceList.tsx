@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import { userDeviceListGet } from '../../chain/userChain'
-import { EntityType } from '../../type/entityType'
-import { UserDeviceType } from '../../type/userType'
-import { deviceListToJson, deviceListFromJson } from '../../type/userType'
+import { useState, useEffect } from 'react'
+import { Entity } from '../../class/Entity'
+import { DeviceType } from '../../type/deviceType'
+import { deviceListToJson, deviceListFromJson } from '../../type/deviceType'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
 const DisplayDeviceList = (props: {
-  entity: EntityType
+  entity: Entity
   userId: number
 }) => {
-  const [deviceList, setDeviceList] = useState<Array<UserDeviceType>>([])
+  const [deviceList, setDeviceList] = useState<Array<DeviceType>>([])
   const [error, setError] = useState<string | undefined>()
 
-  const updateDeviceList = (userId: number, entity: EntityType) => {
-    userDeviceListGet(userId, entity).then((_deviceList) => {
+  const updateDeviceList = (userId: number, entity: Entity) => {
+    entity.getDeviceListFromUserId(userId).then((_deviceList) => {
       const _deviceListJSON = deviceListToJson(_deviceList)
       if (!deviceList || deviceListToJson(deviceList) !== _deviceListJSON) {
         setDeviceList(deviceListFromJson(_deviceListJSON))
@@ -35,7 +34,7 @@ const DisplayDeviceList = (props: {
     return () => clearTimeout(timer);
   });
 
-  const displayDevice = (device: UserDeviceType) => {
+  const displayDevice = (device: DeviceType) => {
     return (
       <ListGroup.Item key={device.address} variant={device.disable ? "danger" : "success"}>
         {device.name}<br />{device.address}
@@ -43,7 +42,7 @@ const DisplayDeviceList = (props: {
     )
   }
 
-  const displayDeviceList = (_deviceList: Array<UserDeviceType>) => {
+  const displayDeviceList = (_deviceList: Array<DeviceType>) => {
     return (
       <ListGroup>
         {_deviceList.map((device) => { return displayDevice(device) })}

@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import BoxWidget from '../component/boxWidget'
 import DisplayDeviceList from '../component/display/displayDeviceList'
 import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
-import { EntityType } from '../type/entityType'
+import { Entity } from '../class/Entity'
 import { UserType } from '../type/userType'
 import { userToJson, userFromJson } from '../type/userType'
-import { userGet } from '../chain/userChain'
 
 const AdminUser = (props: {
   userId: number,
-  entity: EntityType,
+  entity: Entity,
 }) => {
   const [user, setUser] = useState<UserType | undefined>()
   const [error, setError] = useState<string | undefined>()
 
 
-  const updateUser = (userId: number, entity: EntityType) => {
-    userGet(userId, entity).then((_user) => {
+  const updateUser = (userId: number, entity: Entity) => {
+    entity.getUserFromId(userId).then((_user) => {
       const _userJSON = userToJson(_user)
       if (!user || userToJson(user) !== _userJSON) {
         setUser(userFromJson(_userJSON))
@@ -45,9 +44,9 @@ const AdminUser = (props: {
       }
       {user &&
         <div>
-          <BoxWidget title={"User : " + user.firstName + " " + user.lastName}>
+          <BoxWidget title={"User : " + user.userName}>
             Personal account :
-            <DisplayBalanceWidget balance={user.balance} entity={props.entity}/>
+            <DisplayBalanceWidget balance={user.balance} entity={props.entity} />
           </BoxWidget>
         </div>
       }

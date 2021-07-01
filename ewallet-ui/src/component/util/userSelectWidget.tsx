@@ -1,32 +1,35 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import SelectWidget from '../selectWidget'
-import { EntityType } from '../../type/entityType'
-import { entityGetUserList } from '../../chain/entityChain'
+import { Entity } from '../../class/Entity'
 
-const UserSelectWidget = (props:{
-  name : string,
-  value : string,
-  onChange : (event : any) => void,
-  entity : EntityType,
+const UserSelectWidget = (props: {
+  name: string,
+  value: string,
+  onChange: (event: any) => void,
+  entity: Entity,
 }) => {
 
   const [option, setOption] = useState<Array<{
-    name:string,
-    value:string,
+    name: string,
+    value: string,
   }>>([])
 
   useEffect(() => {
-    if (option.length === 0){
-      entityGetUserList(props.entity).then(userList =>{
-        const _option = userList.map(user => {return {
-          value : user.userId.toString(),
-          name : user.firstName + ' ' + user.lastName,
-        }})
+    if (option.length === 0) {
+      props.entity.getUserList().then(userList => {
+        const _option = userList.map(user => {
+          return {
+            value: user.userId.toString(),
+            name: user.userName,
+          }
+        })
         if (_option[0])
-          props.onChange({target:{
-            name : props.name,
-            value : _option[0].value,
-          }})
+          props.onChange({
+            target: {
+              name: props.name,
+              value: _option[0].value,
+            }
+          })
         setOption(_option)
       })
     }

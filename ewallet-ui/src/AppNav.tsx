@@ -5,15 +5,19 @@ import Nav from 'react-bootstrap/Nav';
 //import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import {
-  EntityType,
-  deleteEntity
-} from './type/entityType'
+  Entity,
+} from './class/Entity'
+
+import {
+  localEntityDelete,
+} from './class/LocalEntity'
+
 import WalletWidget from './component/walletWidget'
 
 const AppNav = (props: {
   setIsHome: (number: number) => void,
-  setEntity: (entity: EntityType | null) => void,
-  entity: EntityType | undefined | null,
+  setEntity: (entity: Entity | null) => void,
+  entity: Entity | undefined | null,
   address: string,
   error: string | undefined,
   networkName: string,
@@ -52,7 +56,7 @@ const AppNav = (props: {
       </Navbar.Brand>
       {!!props.entity &&
         <Button variant="danger" onClick={() => {
-          deleteEntity()
+          localEntityDelete()
           props.setEntity(null)
         }}>Delete entity</Button>
       }

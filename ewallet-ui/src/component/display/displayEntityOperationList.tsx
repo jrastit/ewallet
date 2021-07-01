@@ -1,17 +1,17 @@
 
-import React, { useState, useEffect } from 'react'
-import { entityGetOperationList } from '../../chain/entityChain'
-import { EntityType, EntityOperationType } from '../../type/entityType'
+import { useState, useEffect } from 'react'
+import { Entity } from '../../class/Entity'
+import { OperationType } from '../../type/operationType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
-const DisplayEntityOperation = (props: { entity: EntityType }) => {
-  const [operationList, setOperationList] = useState<Array<EntityOperationType>>([])
+const DisplayEntityOperation = (props: { entity: Entity }) => {
+  const [operationList, setOperationList] = useState<Array<OperationType>>([])
   const [error, setError] = useState<string | undefined>()
 
-  const updateOperation = (entity: EntityType) => {
-    entityGetOperationList(entity).then((_operationList) => {
+  const updateOperation = (entity: Entity) => {
+    entity.getOperationList().then((_operationList) => {
       if (!operationList || _operationList.length !== operationList.length) {
         setOperationList([..._operationList])
       }
@@ -31,7 +31,7 @@ const DisplayEntityOperation = (props: { entity: EntityType }) => {
     return () => clearTimeout(timer);
   });
 
-  const displayOperation = (operation: EntityOperationType) => {
+  const displayOperation = (operation: OperationType) => {
     return (
       <ListGroup.Item
         key={operation.blockNumber.toString()}
@@ -39,12 +39,12 @@ const DisplayEntityOperation = (props: { entity: EntityType }) => {
           operation.balance[0].balance.lt(0) ? "danger" : "success"}
       >
         {operation.message}
-        <DisplayBalanceWidget balance={operation.balance} entity={props.entity}/>
+        <DisplayBalanceWidget balance={operation.balance} entity={props.entity} />
       </ListGroup.Item>
     )
   }
 
-  const displayOperationList = (_operationList: Array<EntityOperationType>) => {
+  const displayOperationList = (_operationList: Array<OperationType>) => {
     const operationListToDisplay = _operationList.slice(
       Math.max(_operationList.length - 10, 0)
     ).reverse()

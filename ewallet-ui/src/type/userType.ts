@@ -1,18 +1,13 @@
-import { BalanceType } from './tokenType'
-import { balanceToString, balanceFromString } from './tokenType'
+import { BalanceType } from './balanceType'
+import { balanceToString, balanceFromString } from './balanceType'
+import { DeviceType } from './deviceType'
 
-type UserDeviceType = {
-  name: string
-  address: string
-  disable: boolean
-}
 
 type UserType = {
   userId: number
-  firstName: string
-  lastName: string | undefined
+  userName: string
   balance: Array<BalanceType>
-  device: Array<UserDeviceType>
+  device: Array<DeviceType>
   disable: boolean
 }
 
@@ -20,8 +15,7 @@ const userToString = (user: UserType) => {
   if (user) {
     return {
       userId: user.userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      userName: user.userName,
       balance: user.balance.map(balanceToString),
       device: user.device,
       disable: user.disable,
@@ -33,8 +27,7 @@ const userFromString = (user: any) => {
   if (user) {
     return {
       userId: user.userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      userName: user.userName,
       balance: user.balance.map(balanceFromString),
       device: user.device,
       disable: user.disable,
@@ -52,15 +45,7 @@ const userListFromJson = (userList: string | undefined) => {
     return JSON.parse(userList).map(userFromString)
 }
 
-const deviceListToJson = (deviceList: Array<UserDeviceType>) => {
-  if (deviceList)
-    return JSON.stringify(deviceList)
-}
 
-const deviceListFromJson = (deviceList: string | undefined) => {
-  if (deviceList)
-    return JSON.parse(deviceList)
-}
 
 const userToJson = (user: UserType) => {
   if (user)
@@ -72,10 +57,9 @@ const userFromJson = (user: string | undefined) => {
     return userFromString(JSON.parse(user))
 }
 
-export type { UserDeviceType, UserType }
+export type { UserType }
 export {
   userToString, userFromString,
   userListToJson, userListFromJson,
-  deviceListToJson, deviceListFromJson,
   userToJson, userFromJson,
 }

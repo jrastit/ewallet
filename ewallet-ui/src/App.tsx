@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers'
 import logo from './logo.svg';
 import './App.css';
 import AppNav from './AppNav'
 import {
-  EntityType,
-  loadEntity
-} from './type/entityType'
+  Entity,
+} from './class/Entity'
+
 import {
-  userIdGet,
-} from './chain/userChain'
+  localEntityLoad,
+} from './class/LocalEntity'
+
 import AdminEntity from './section/adminEntity'
 import AdminUser from './section/adminUser'
 import BoxWidget from './component/boxWidget'
@@ -40,11 +41,11 @@ function App() {
     wallet: undefined,
     error: undefined,
   })
-  const [entity, setEntity] = useState<EntityType | null | undefined>(null)
+  const [entity, setEntity] = useState<Entity | null | undefined>(null)
   const [userId, setUserId] = useState(-1)
 
   if (walletInfo.wallet && entity) {
-    userIdGet(walletInfo.address, entity).then(
+    entity.getUserIdFromAddress(walletInfo.address).then(
       (_userId) => {
         if (_userId !== userId) {
           setUserId(_userId)
@@ -70,7 +71,7 @@ function App() {
   }
 
   if (!entity) {
-    const storageEntity = loadEntity()
+    const storageEntity = localEntityLoad()
     if (storageEntity) setEntity(storageEntity)
   }
 

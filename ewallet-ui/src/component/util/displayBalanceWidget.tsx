@@ -1,36 +1,35 @@
 import { useState, useEffect } from 'react'
-import { BalanceType } from '../../type/tokenType'
+import { BalanceType } from '../../type/balanceType'
 import { ethers } from 'ethers'
-import { EntityType } from '../../type/entityType'
-import { entityGetToken } from '../../chain/entityChain'
+import { Entity } from '../../class/Entity'
 
-const DisplayBalanceWidget = (props:{
-  balance : Array<BalanceType>,
-  entity : EntityType,
+const DisplayBalanceWidget = (props: {
+  balance: Array<BalanceType>,
+  entity: Entity,
 }) => {
 
   const [balanceList, setBalanceList] = useState<Array<{
-    balance : string,
-    symbol : string,
+    balance: string,
+    symbol: string,
   }>>([])
 
   useEffect(() => {
 
-    const updateBalance = async (balance : Array<BalanceType>) => {
-      return Promise.all(props.balance.map(async(balance) => {
-        const token = await entityGetToken(props.entity, balance.token)
-        if (token){
+    const updateBalance = async (balance: Array<BalanceType>) => {
+      return Promise.all(balance.map(async (balance) => {
+        const token = await props.entity.getToken(balance.token)
+        if (token) {
           return {
-            balance : ethers.utils.formatUnits(
+            balance: ethers.utils.formatUnits(
               balance.balance,
               token.decimal
             ),
-            symbol : token.symbol
+            symbol: token.symbol
           }
         }
         return {
-          balance : "error",
-          symbol : "?"
+          balance: "error",
+          symbol: "?"
         }
       }))
     }
@@ -40,7 +39,7 @@ const DisplayBalanceWidget = (props:{
     })
   }, [props.balance, props.entity])
 
-  const displayBalance = (balance : {balance : string, symbol : string}) => {
+  const displayBalance = (balance: { balance: string, symbol: string }) => {
     return (<div key={balance.symbol}>{balance.balance}&nbsp;{balance.symbol}</div>)
   }
 

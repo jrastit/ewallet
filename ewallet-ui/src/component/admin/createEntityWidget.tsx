@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-import { EntityType } from '../../type/entityType'
-import { entityCreate } from '../../chain/entityChain'
+import { Entity } from '../../class/Entity'
+import { LocalEntity } from '../../class/LocalEntity'
 
 const CreateEntityWidget = (props: {
-  setEntity: (entity: EntityType) => void,
+  setEntity: (entity: Entity) => void,
   networkName: string,
   address: string,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
     name: '',
-    firstName: '',
-    lastName: '',
+    userName: '',
+    deviceName: '',
   })
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
@@ -28,13 +28,13 @@ const CreateEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    entityCreate(
-      fieldValue.name,
-      props.networkName,
-      props.address,
-      fieldValue.firstName,
-      fieldValue.lastName,
-    ).then(entity => {
+    new LocalEntity({
+      name: fieldValue.name,
+      networkName: props.networkName,
+      address: props.address,
+      userName: fieldValue.userName,
+      deviceName: fieldValue.deviceName,
+    }).init().then(entity => {
       props.setEntity(entity)
       setSubmit(2)
     }).catch((error) => {
@@ -57,14 +57,14 @@ const CreateEntityWidget = (props: {
         <Form.Control type="text" name="name" value={fieldValue.name} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
-        <Form.Label>Your first name:</Form.Label>
-        <Form.Control type="text" name="firstName" value={fieldValue.firstName} onChange={handleChange} />
+        <Form.Label>Your name:</Form.Label>
+        <Form.Control type="text" name="userName" value={fieldValue.userName} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
-        <Form.Label>Your last name:</Form.Label>
-        <Form.Control type="text" name="lastName" value={fieldValue.lastName} onChange={handleChange} />
+        <Form.Label>Your device name:</Form.Label>
+        <Form.Control type="text" name="deviceName" value={fieldValue.deviceName} onChange={handleChange} />
       </Form.Group>
-      {fieldValue.name && fieldValue.firstName &&
+      {fieldValue.name && fieldValue.userName && fieldValue.deviceName &&
         <Form.Group><Button variant="info" type="submit">Ok</Button></Form.Group>
       }
     </Form>
