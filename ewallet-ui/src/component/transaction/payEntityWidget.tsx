@@ -5,7 +5,7 @@ import TokenSelectWidget from '../util/tokenSelectWidget'
 import { Entity } from '../../class/Entity'
 
 const PayEntityWidget = (props: {
-  userId: number,
+  memberId: number,
   entity: Entity,
   address: string,
 }) => {
@@ -28,7 +28,7 @@ const PayEntityWidget = (props: {
 
   const formSubmit = (event: any) => {
     props.entity.pay(
-      props.userId,
+      props.memberId,
       fieldValue.amount,
       fieldValue.token,
       fieldValue.name,

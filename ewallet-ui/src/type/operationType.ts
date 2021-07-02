@@ -5,7 +5,7 @@ import { balanceToString, balanceFromString } from './balanceType'
 
 type OperationType = {
   blockNumber: ethers.BigNumber,
-  userId: number,
+  memberId: number,
   message: string,
   category: string,
   balance: Array<BalanceType>,
@@ -15,7 +15,7 @@ type OperationType = {
 const operationToString = (operation: OperationType | undefined) => {
   if (operation) return {
     blockNumber: operation.blockNumber.toString(),
-    userId: operation.userId,
+    memberId: operation.memberId,
     message: operation.message,
     category: operation.category,
     balance: operation.balance.map(balanceToString),
@@ -26,7 +26,7 @@ const operationToString = (operation: OperationType | undefined) => {
 const operationFromString = (operation: any) => {
   if (operation) return {
     blockNumber: ethers.BigNumber.from(operation.blockNumber),
-    userId: operation.userId,
+    memberId: operation.memberId,
     message: operation.message,
     category: operation.category,
     balance: operation.balance.map(balanceFromString),

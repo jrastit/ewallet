@@ -9,8 +9,8 @@ import {
 } from './class/Entity'
 
 import {
-  localEntityDelete,
-} from './class/LocalEntity'
+  entityDelete,
+} from './util/entityStorage'
 
 import WalletWidget from './component/walletWidget'
 
@@ -56,7 +56,7 @@ const AppNav = (props: {
       </Navbar.Brand>
       {!!props.entity &&
         <Button variant="danger" onClick={() => {
-          localEntityDelete()
+          entityDelete()
           props.setEntity(null)
         }}>Delete entity</Button>
       }

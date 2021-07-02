@@ -2,20 +2,19 @@
 
 pragma solidity ^0.8.0;
 
+import { IERC20 } from "./IERC20.sol";
+
 /**
  * @title EWallet
  * @dev Non custodial entity wallet
  */
 contract EWallet {
 
-    struct TokenBalance {
-        address tokenAddress;
-        uint256 balance;
-    }
+    event Deposit(address indexed _from, address _tokenAddress, uint _value);
 
     struct Device {
         string name;
-        address walletAddress;
+        address payable walletAddress;
         uint256 memberId;
         bool disable;
     }
@@ -32,17 +31,19 @@ contract EWallet {
         string name;
         Role role;
         bool disable;
-        mapping(address => uint256) tokenBalance;
-
         uint256 deviceId;
-        mapping (uint256 => Device) deviceList;
-        mapping (string => uint256) deviceListByName;
-        mapping (address => uint256) deviceListByAddress;
+        uint256 balanceETH;
     }
 
     mapping (uint256 => Member) public memberList;
     mapping (string => uint256) public memberListByName;
     mapping (address => uint256) public memberListByAddress;
+
+
+    mapping(uint256 => mapping(address => uint256)) public balanceERC20;
+    mapping(uint256 => mapping(uint256 => Device)) public deviceList;
+    mapping(uint256 =>mapping (string => uint256)) public deviceListByName;
+    mapping(uint256 =>mapping (address => uint256)) public deviceListByAddress;
 
     uint256 public memberId;
 
@@ -65,17 +66,17 @@ contract EWallet {
         require(bytes(_name).length > 0, "Name is empty");
         require(_walletAddress != address(0), "Address is empty");
 
-        require(memberList[_memberId].deviceListByName[_name] == 0, "Dupplicate name");
+        require(deviceListByName[_memberId][_name] == 0, "Dupplicate name");
         require(memberListByAddress[_walletAddress] == 0, "Dupplicate address");
 
         memberList[_memberId].deviceId += 1;
 
-        memberList[_memberId].deviceList[memberList[_memberId].deviceId].name = _name;
-        memberList[_memberId].deviceList[memberList[_memberId].deviceId].walletAddress = _walletAddress;
-        memberList[_memberId].deviceList[memberList[_memberId].deviceId].memberId = _memberId;
+        deviceList[_memberId][memberList[_memberId].deviceId].name = _name;
+        deviceList[_memberId][memberList[_memberId].deviceId].walletAddress = payable(_walletAddress);
+        deviceList[_memberId][memberList[_memberId].deviceId].memberId = _memberId;
 
-        memberList[_memberId].deviceListByName[_name] = memberList[_memberId].deviceId;
-        memberList[_memberId].deviceListByAddress[_walletAddress] = memberList[_memberId].deviceId;
+        deviceListByName[_memberId][_name] = memberList[_memberId].deviceId;
+        deviceListByAddress[_memberId][_walletAddress] = memberList[_memberId].deviceId;
         memberListByAddress[_walletAddress] = _memberId;
 
     }
@@ -97,7 +98,7 @@ contract EWallet {
     }
 
     modifier deviceEnable {
-        require(!memberList[memberListByAddress[msg.sender]].deviceList[memberList[memberListByAddress[msg.sender]].deviceListByAddress[msg.sender]].disable, "Device disable");
+        require(!deviceList[memberListByAddress[msg.sender]][deviceListByAddress[memberListByAddress[msg.sender]][msg.sender]].disable, "Device disable");
         _;
     }
 
@@ -136,9 +137,9 @@ contract EWallet {
     }
 
     function _disableDevice(address _walletAddress, bool _disable, uint256 _memberId) private {
-        uint256 _deviceId = memberList[_memberId].deviceListByAddress[_walletAddress];
+        uint256 _deviceId = deviceListByAddress[_memberId][_walletAddress];
         require(_deviceId != 0, "device not found");
-        memberList[_memberId].deviceList[_deviceId].disable = _disable;
+        deviceList[_memberId][_deviceId].disable = _disable;
     }
 
     function disableSelfDevice(address _walletAddress, bool _disable) public memberEnable deviceEnable roleManageSelfDevice {
@@ -183,6 +184,40 @@ contract EWallet {
             _manageSelfDevice,
             _manageDevice
         );
+    }
+
+    function depositETH(
+
+    ) public payable memberEnable deviceEnable {
+        memberList[memberListByAddress[msg.sender]].balanceETH += msg.value;
+    }
+
+    function depositERC20Token(
+        address _tokenAddress,
+        uint256 _amount
+    ) public memberEnable deviceEnable {
+        IERC20 token = IERC20(_tokenAddress);
+        bool transferSucceeded  = token.transferFrom(msg.sender, address(this), _amount);
+        require(transferSucceeded, "token transfer error");
+        balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] += _amount;
+    }
+
+    function withdrawETH(
+        uint256 _amount
+    ) public memberEnable deviceEnable {
+        require(memberList[memberListByAddress[msg.sender]].balanceETH < _amount);
+        memberList[memberListByAddress[msg.sender]].balanceETH -= _amount;
+        payable(msg.sender).transfer(_amount);
+    }
+
+    function withdrawERC20Token(
+        address _tokenAddress,
+        uint256 _amount
+    ) public memberEnable deviceEnable {
+        require(balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] < _amount);
+        IERC20 token = IERC20(_tokenAddress);
+        balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] -= _amount;
+        token.transfer(msg.sender, _amount);
     }
 
     /**

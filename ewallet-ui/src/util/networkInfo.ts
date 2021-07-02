@@ -5,7 +5,9 @@ import {
 } from '../util/configNetwork'
 
 declare global {
-  interface Window { ethereum: any; }
+  interface Window {
+    ethereum: any;
+  }
 }
 
 const addHooks = () => {

@@ -6,14 +6,14 @@ import ListGroup from 'react-bootstrap/ListGroup';
 
 
 const DisplayDeviceList = (props: {
-  entity: Entity
-  userId: number
+  entity: Entity,
+  memberId: number,
 }) => {
   const [deviceList, setDeviceList] = useState<Array<DeviceType>>([])
   const [error, setError] = useState<string | undefined>()
 
-  const updateDeviceList = (userId: number, entity: Entity) => {
-    entity.getDeviceListFromUserId(userId).then((_deviceList) => {
+  const updateDeviceList = (memberId: number, entity: Entity) => {
+    entity.getDeviceListFromMemberId(memberId).then((_deviceList) => {
       const _deviceListJSON = deviceListToJson(_deviceList)
       if (!deviceList || deviceListToJson(deviceList) !== _deviceListJSON) {
         setDeviceList(deviceListFromJson(_deviceListJSON))
@@ -28,7 +28,7 @@ const DisplayDeviceList = (props: {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      updateDeviceList(props.userId, props.entity);
+      updateDeviceList(props.memberId, props.entity);
     }, 2000);
     // Clear timeout if the component is unmounted
     return () => clearTimeout(timer);

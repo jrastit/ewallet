@@ -4,22 +4,22 @@ import DisplayDeviceList from '../component/display/displayDeviceList'
 import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
 import { Entity } from '../class/Entity'
-import { UserType } from '../type/userType'
-import { userToJson, userFromJson } from '../type/userType'
+import { MemberType } from '../type/memberType'
+import { memberToJson, memberFromJson } from '../type/memberType'
 
-const AdminUser = (props: {
-  userId: number,
+const AdminMember = (props: {
+  memberId: number,
   entity: Entity,
 }) => {
-  const [user, setUser] = useState<UserType | undefined>()
+  const [member, setMember] = useState<MemberType | undefined>()
   const [error, setError] = useState<string | undefined>()
 
 
-  const updateUser = (userId: number, entity: Entity) => {
-    entity.getUserFromId(userId).then((_user) => {
-      const _userJSON = userToJson(_user)
-      if (!user || userToJson(user) !== _userJSON) {
-        setUser(userFromJson(_userJSON))
+  const updateMember = (memberId: number, entity: Entity) => {
+    entity.getMemberFromId(memberId).then((_member) => {
+      const _memberJSON = memberToJson(_member)
+      if (!member || memberToJson(member) !== _memberJSON) {
+        setMember(memberFromJson(_memberJSON))
       }
     }).catch((_error) => {
       if (_error.message !== error) {
@@ -31,7 +31,7 @@ const AdminUser = (props: {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      updateUser(props.userId, props.entity);
+      updateMember(props.memberId, props.entity);
     }, 2000);
     // Clear timeout if the component is unmounted
     return () => clearTimeout(timer);
@@ -39,26 +39,26 @@ const AdminUser = (props: {
 
   return (
     <div>
-      {!user &&
-        <span>Loading user...</span>
+      {!member &&
+        <span>Loading member...</span>
       }
-      {user &&
+      {member &&
         <div>
-          <BoxWidget title={"User : " + user.userName}>
+          <BoxWidget title={"Member : " + member.memberName}>
             Personal account :
-            <DisplayBalanceWidget balance={user.balance} entity={props.entity} />
+            <DisplayBalanceWidget balance={member.balance} entity={props.entity} />
           </BoxWidget>
         </div>
       }
       <BoxWidget title='Add device'>
-        <AddDeviceWidget entity={props.entity} userId={props.userId} />
+        <AddDeviceWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
       <BoxWidget title='Device list'>
-        <DisplayDeviceList entity={props.entity} userId={props.userId} />
+        <DisplayDeviceList entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
 
     </div>
   )
 }
 
-export default AdminUser
+export default AdminMember

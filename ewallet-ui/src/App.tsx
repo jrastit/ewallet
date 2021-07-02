@@ -8,11 +8,11 @@ import {
 } from './class/Entity'
 
 import {
-  localEntityLoad,
-} from './class/LocalEntity'
+  entityLoad,
+} from './util/entityStorage'
 
 import AdminEntity from './section/adminEntity'
-import AdminUser from './section/adminUser'
+import AdminMember from './section/adminMember'
 import BoxWidget from './component/boxWidget'
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
@@ -34,7 +34,7 @@ function App() {
   const [isHome, setIsHome] = useState(1);
   const [walletInfo, setWalletInfo] = useState<{
     address: string,
-    wallet: ethers.Wallet | undefined
+    wallet: ethers.Wallet | undefined,
     error: string | undefined
   }>({
     address: "Loading...",
@@ -42,16 +42,16 @@ function App() {
     error: undefined,
   })
   const [entity, setEntity] = useState<Entity | null | undefined>(null)
-  const [userId, setUserId] = useState(-1)
+  const [memberId, setMemberId] = useState(-1)
 
   if (walletInfo.wallet && entity) {
-    entity.getUserIdFromAddress(walletInfo.address).then(
-      (_userId) => {
-        if (_userId !== userId) {
-          setUserId(_userId)
+    entity.getMemberIdFromAddress(walletInfo.address).then(
+      (_memberId) => {
+        if (_memberId !== memberId) {
+          setMemberId(_memberId)
         }
       }
-    ).catch((err) => setUserId(-1))
+    ).catch((err) => setMemberId(-1))
   }
 
   const updateAddress = (_address: string, _wallet: ethers.Wallet | undefined) => {
@@ -70,15 +70,15 @@ function App() {
     setWalletInfo({ address: "error", wallet: undefined, error: _error })
   }
 
-  if (!entity) {
-    const storageEntity = localEntityLoad()
-    if (storageEntity) setEntity(storageEntity)
-  }
-
   useEffect(() => {
     if (!walletInfo.wallet) {
       getWallet(networkName, updateWallet, updateError)
       addHooks()
+    }else if (!entity) {
+      entityLoad(walletInfo.wallet).then((storageEntity) => {
+        if (storageEntity) setEntity(storageEntity)
+      })
+
     }
   })
 
@@ -119,16 +119,17 @@ function App() {
               setEntity={setEntity}
               networkName={networkName}
               address={walletInfo.address}
+              signer={walletInfo.wallet}
             />
           </BoxWidget>
         }
-        {!isHome && !!entity && userId >= 0 &&
+        {!isHome && !!entity && memberId >= 0 &&
           <Row>
-            <Col><AdminEntity userId={userId} entity={entity} /></Col>
-            <Col><AdminUser userId={userId} entity={entity} /></Col>
+            <Col><AdminEntity memberId={memberId} entity={entity} /></Col>
+            <Col><AdminMember memberId={memberId} entity={entity} /></Col>
             <Col>
               <BoxWidget title='Pay entity'>
-                <PayEntity userId={userId} entity={entity} address={walletInfo.address}/>
+                <PayEntity memberId={memberId} entity={entity} address={walletInfo.address}/>
               </BoxWidget>
               <BoxWidget title='Entity operation'>
                 <DisplayEntityOperationList entity={entity} />
@@ -136,11 +137,11 @@ function App() {
             </Col>
           </Row>
         }
-        {!isHome && !!entity && userId < 0 &&
+        {!isHome && !!entity && memberId < 0 &&
           <Row>
             <Col>
               <BoxWidget title='Pay entity'>
-                <PayEntity userId={userId} entity={entity} address={walletInfo.address}/>
+                <PayEntity memberId={memberId} entity={entity} address={walletInfo.address}/>
               </BoxWidget>
             </Col>
           </Row>

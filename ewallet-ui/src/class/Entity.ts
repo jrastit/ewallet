@@ -1,7 +1,7 @@
 import { TokenType } from '../type/tokenType'
 import { BalanceType } from '../type/balanceType'
 import { OperationType } from '../type/operationType'
-import { UserType } from '../type/userType'
+import { MemberType } from '../type/memberType'
 import { DeviceType } from '../type/deviceType'
 
 class Entity {
@@ -47,58 +47,58 @@ class Entity {
     throw new Error('You must implement this function');
   }
 
-  async getUserList(): Promise<UserType[]> {
+  async getMemberList(): Promise<MemberType[]> {
     throw new Error('You must implement this function');
   }
 
-  async getUserIdFromAddress(
+  async getMemberIdFromAddress(
     address: string,
   ) {
-    const userList = await this.getUserList()
+    const memberList = await this.getMemberList()
 
-    for (let i = 0; i < userList.length; i++) {
-      for (let j = 0; j < userList[i].device.length; j++) {
-        if (userList[i].device[j].address === address) {
-          if (userList[i].device[j].disable) {
+    for (let i = 0; i < memberList.length; i++) {
+      for (let j = 0; j < memberList[i].device.length; j++) {
+        if (memberList[i].device[j].address === address) {
+          if (memberList[i].device[j].disable) {
             throw new Error("This device wallet key is disable")
           }
-          const userId: number = userList[i].userId
-          return userId
+          const memberId: number = memberList[i].memberId
+          return memberId
         }
       }
     }
     throw new Error("Address not found")
   }
 
-  async getUserFromId(
-    userId: number,
+  async getMemberFromId(
+    memberId: number,
   ) {
-    const userList = await this.getUserList()
-    for (let i = 0; i < userList.length; i++) {
-      if (userList[i].userId === userId) {
-        return userList[i]
+    const memberList = await this.getMemberList()
+    for (let i = 0; i < memberList.length; i++) {
+      if (memberList[i].memberId === memberId) {
+        return memberList[i]
       }
     }
-    throw new Error("User not found")
+    throw new Error("Member not found")
   }
 
-  async getDeviceListFromUserId(
-    userId: number,
+  async getDeviceListFromMemberId(
+    memberId: number,
   ): Promise<DeviceType[]> {
-    const user = await this.getUserFromId(userId)
-    return user.device
+    const member = await this.getMemberFromId(memberId)
+    return member.device
   }
 
-  async addUser(
-    userWallet: string,
-    userName: string,
+  async addMember(
+    memberWallet: string,
+    memberName: string,
     deviceName: string,
   ) {
     throw new Error('You must implement this function');
   }
 
-  async addDeviceForUserId(
-    userId: number,
+  async addDeviceForMemberId(
+    memberId: number,
     name: string,
     address: string,
   ) {
@@ -106,7 +106,7 @@ class Entity {
   }
 
   async depositFund(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
   ) {
@@ -114,7 +114,7 @@ class Entity {
   }
 
   async withdrawFund(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
   ) {
@@ -122,7 +122,7 @@ class Entity {
   }
 
   async pay(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
     name: string,

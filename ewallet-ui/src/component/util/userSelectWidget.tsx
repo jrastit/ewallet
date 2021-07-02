@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import SelectWidget from '../selectWidget'
 import { Entity } from '../../class/Entity'
 
-const UserSelectWidget = (props: {
+const MemberSelectWidget = (props: {
   name: string,
   value: string,
   onChange: (event: any) => void,
@@ -16,11 +16,11 @@ const UserSelectWidget = (props: {
 
   useEffect(() => {
     if (option.length === 0) {
-      props.entity.getUserList().then(userList => {
-        const _option = userList.map(user => {
+      props.entity.getMemberList().then(memberList => {
+        const _option = memberList.map(member => {
           return {
-            value: user.userId.toString(),
-            name: user.userName,
+            value: member.memberId.toString(),
+            name: member.memberName,
           }
         })
         if (_option[0])
@@ -45,4 +45,4 @@ const UserSelectWidget = (props: {
   )
 }
 
-export default UserSelectWidget
+export default MemberSelectWidget

@@ -1,13 +1,13 @@
 import { Entity } from './Entity'
 
 import { OperationType } from '../type/operationType'
-import { UserType } from '../type/userType'
+import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
 import { BalanceType } from '../type/balanceType'
 import { balanceAdd, balanceSub, balanceGte } from '../type/balanceType'
 import { balanceToString, balanceFromString } from '../type/balanceType'
 import { operationToString, operationFromString } from '../type/operationType'
-import { userToString, userFromString } from '../type/userType'
+import { memberToString, memberFromString } from '../type/memberType'
 
 import { ethers } from 'ethers'
 
@@ -19,9 +19,9 @@ class LocalEntity extends Entity {
 
   operationList: Array<OperationType>
 
-  userId: number
+  memberId: number
 
-  userList: Array<UserType>
+  memberList: Array<MemberType>
 
   networkName: string
 
@@ -33,15 +33,15 @@ class LocalEntity extends Entity {
       networkName: string,
 
       address?: string,
-      userName?: string,
+      memberName?: string,
       deviceName?: string,
 
       balance?: any,
       blockNumber?: string,
       operationList?: any,
-      userId?: number
-      userList?: any
-      tokenList?: Array<TokenType>
+      memberId?: number,
+      memberList?: any,
+      tokenList?: Array<TokenType>,
     }
   ) {
     super(
@@ -51,8 +51,8 @@ class LocalEntity extends Entity {
     this.operationList = []
     this.balance = []
     this.blockNumber = ethers.BigNumber.from(0)
-    this.userId = 0
-    this.userList = []
+    this.memberId = 0
+    this.memberList = []
     this.tokenList = [{
       name: 'eth',
       niceName: 'ether',
@@ -72,10 +72,10 @@ class LocalEntity extends Entity {
       decimal: 6,
       networkName: props.networkName,
     }]
-    if (props.address && props.userName && props.deviceName) {
-      this.addUser(
+    if (props.address && props.memberName && props.deviceName) {
+      this.addMember(
         props.address,
-        props.userName,
+        props.memberName,
         props.deviceName,
       )
       this.addLog(
@@ -89,15 +89,15 @@ class LocalEntity extends Entity {
       props.balance &&
       props.blockNumber &&
       props.operationList &&
-      props.userId &&
-      props.userList &&
+      props.memberId &&
+      props.memberList &&
       props.tokenList
     ) {
       this.balance = props.balance.map(balanceFromString)
       this.blockNumber = ethers.BigNumber.from(props.blockNumber)
       this.operationList = props.operationList.map(operationFromString)
-      this.userId = props.userId
-      this.userList = props.userList.map(userFromString)
+      this.memberId = props.memberId
+      this.memberList = props.memberList.map(memberFromString)
       this.tokenList = props.tokenList
     }
   }
@@ -110,8 +110,8 @@ class LocalEntity extends Entity {
       blockNumber: this.blockNumber.toString(),
       balance: this.balance.map(balanceToString),
       operationList: this.operationList.map(operationToString),
-      userId: this.userId,
-      userList: this.userList.map(userToString),
+      memberId: this.memberId,
+      memberList: this.memberList.map(memberToString),
     }
   }
 
@@ -124,14 +124,14 @@ class LocalEntity extends Entity {
   }
 
   addLog(
-    userId: number,
+    memberId: number,
     message: string,
     category: string,
     balance: Array<BalanceType>
   ) {
     this.operationList.push({
       blockNumber: this.blockNumber,
-      userId,
+      memberId,
       message,
       category,
       balance,
@@ -151,41 +151,41 @@ class LocalEntity extends Entity {
     return this.operationList
   }
 
-  async getUserList(): Promise<UserType[]> {
-    return this.userList
+  async getMemberList(): Promise<MemberType[]> {
+    return this.memberList
   }
 
-  async addUser(
-    userWallet: string,
-    userName: string,
+  async addMember(
+    memberWallet: string,
+    memberName: string,
     deviceName: string,
   ) {
-    if (this.userList.filter(
-      user => user.userName === userName
+    if (this.memberList.filter(
+      member => member.memberName === memberName
     ).length > 0) {
-      throw new Error("User with the same name already present")
+      throw new Error("Member with the same name already present")
     }
 
-    this.userList.map(user => {
-      if (user.device.filter(
-        device => device.address === userWallet
+    this.memberList.map(member => {
+      if (member.device.filter(
+        device => device.address === memberWallet
       ).length > 0) {
         throw new Error("Wallet address already registered")
       }
-      return user
+      return member
     })
 
-    this.userId = this.userId + 1
+    this.memberId = this.memberId + 1
 
-    this.userList.push({
-      userId: this.userId,
-      userName,
+    this.memberList.push({
+      memberId: this.memberId,
+      memberName,
       balance: [],
       device: [],
       disable: false,
     })
     try {
-      await this.addDeviceForUserId(this.userId, deviceName, userWallet)
+      await this.addDeviceForMemberId(this.memberId, deviceName, memberWallet)
     } catch (err) {
       throw err
     }
@@ -194,27 +194,27 @@ class LocalEntity extends Entity {
     this.save()
   }
 
-  async addDeviceForUserId(
-    userId: number,
+  async addDeviceForMemberId(
+    memberId: number,
     name: string,
     address: string,
   ) {
     address = ethers.utils.getAddress(address)
-    this.userList.map(user => {
-      if (user.device.filter(
+    this.memberList.map(member => {
+      if (member.device.filter(
         device => device.address === address
       ).length > 0) {
         throw new Error("Wallet address already registered")
       }
-      return user
+      return member
     })
-    const user = await this.getUserFromId(userId)
-    if (user.device.filter(
+    const member = await this.getMemberFromId(memberId)
+    if (member.device.filter(
       device => device.name === name
     ).length > 0) {
       throw new Error("Device name already used")
     }
-    user.device.push({
+    member.device.push({
       name,
       address,
       disable: false,
@@ -222,22 +222,22 @@ class LocalEntity extends Entity {
     this.save()
   }
 
-  async disableUserFromUserId(
-    userId: number,
+  async disableMemberFromMemberId(
+    memberId: number,
     disable: boolean
   ) {
-    const user = await this.getUserFromId(userId)
-    user.disable = disable
+    const member = await this.getMemberFromId(memberId)
+    member.disable = disable
     this.save()
   }
 
-  async disableDeviceFromUserIdAndAddress(
-    userId: number,
+  async disableDeviceFromMemberIdAndAddress(
+    memberId: number,
     address: string,
     disable: boolean
   ) {
-    const user = await this.getUserFromId(userId)
-    user.device.filter(
+    const member = await this.getMemberFromId(memberId)
+    member.device.filter(
       device => device.address === address
     ).forEach((device) => {
       device.disable = disable
@@ -246,7 +246,7 @@ class LocalEntity extends Entity {
   }
 
   async depositFund(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
   ) {
@@ -257,10 +257,10 @@ class LocalEntity extends Entity {
     }
     const balance = [{ token: token.name, balance: amountBN }]
     balanceAdd(this.balance, balance)
-    const user = await this.getUserFromId(userId)
-    balanceAdd(user.balance, balance)
+    const member = await this.getMemberFromId(memberId)
+    balanceAdd(member.balance, balance)
     this.addLog(
-      userId,
+      memberId,
       "Deposit of fund",
       "funding",
       balance,
@@ -269,7 +269,7 @@ class LocalEntity extends Entity {
   }
 
   async withdrawFund(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
   ) {
@@ -280,19 +280,19 @@ class LocalEntity extends Entity {
     }
     const balance = [{ token: token.name, balance: amountBN }]
     if (balanceGte(this.balance, balance)) {
-      const user = await this.getUserFromId(userId)
-      if (balanceGte(user.balance, balance)) {
-        balanceSub(user.balance, balance)
+      const member = await this.getMemberFromId(memberId)
+      if (balanceGte(member.balance, balance)) {
+        balanceSub(member.balance, balance)
         balanceSub(this.balance, balance)
         this.addLog(
-          userId,
+          memberId,
           "Withdraw of fund",
           "funding",
           [{ token: token.name, balance: ethers.BigNumber.from(0).sub(amountBN) }],
         )
         this.save()
       } else {
-        throw new Error("Not enought user fund")
+        throw new Error("Not enought member fund")
       }
     } else {
       throw new Error("Not enought fund")
@@ -300,7 +300,7 @@ class LocalEntity extends Entity {
   }
 
   async pay(
-    userId: number,
+    memberId: number,
     amount: string,
     tokenName: string,
     name: string,
@@ -315,7 +315,7 @@ class LocalEntity extends Entity {
     const balance = [{ token: token.name, balance: amountBN }]
     balanceAdd(this.balance, balance)
     this.addLog(
-      userId,
+      memberId,
       name + " : " + subject,
       "credit",
       balance,
@@ -325,22 +325,6 @@ class LocalEntity extends Entity {
 
 }
 
-const localEntityFromJson = (json: string | null) => {
-  if (json)
-    return new LocalEntity(JSON.parse(json))
-}
 
-const localEntityLoad = () => {
-  try {
-    return localEntityFromJson(localStorage.getItem("entity"))
-  } catch (error) {
-    console.error(error)
-    localEntityDelete()
-  }
-}
 
-const localEntityDelete = () => {
-  return localStorage.removeItem("entity")
-}
-
-export { LocalEntity, localEntityFromJson, localEntityLoad, localEntityDelete }
+export { LocalEntity }

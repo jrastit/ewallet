@@ -3,11 +3,11 @@ import BoxWidget from '../component/boxWidget'
 import DisplayEntityBalance from '../component/display/displayEntityBalance'
 import FundEntityWidget from '../component/admin/fundEntityWidget'
 import WithdrawEntityWidget from '../component/admin/withdrawEntityWidget'
-import DisplayUserList from '../component/display/displayUserList'
-import AddUserWidget from '../component/admin/addUserWidget'
+import DisplayMemberList from '../component/display/displayMemberList'
+import AddMemberWidget from '../component/admin/addMemberWidget'
 
 const AdminEntity = (props: {
-  userId: number,
+  memberId: number,
   entity: Entity,
 }) => {
   return (
@@ -16,16 +16,16 @@ const AdminEntity = (props: {
         {!!props.entity && <div><DisplayEntityBalance entity={props.entity} /></div>}
       </BoxWidget>
       <BoxWidget title='Fund Entity'>
-        <FundEntityWidget entity={props.entity} userId={props.userId} />
+        <FundEntityWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
       <BoxWidget title='Withdraw from Entity'>
-        <WithdrawEntityWidget entity={props.entity} userId={props.userId} />
+        <WithdrawEntityWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
-      <BoxWidget title='Entity user'>
-        <DisplayUserList entity={props.entity} />
+      <BoxWidget title='Entity member'>
+        <DisplayMemberList entity={props.entity} />
       </BoxWidget>
-      <BoxWidget title='Add user'>
-        <AddUserWidget entity={props.entity} />
+      <BoxWidget title='Add member'>
+        <AddMemberWidget entity={props.entity} />
       </BoxWidget>
     </div>
   )

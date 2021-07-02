@@ -6,7 +6,7 @@ import { Entity } from '../../class/Entity'
 
 const WithdrawEntityWidget = (props: {
   entity: Entity,
-  userId: number,
+  memberId: number,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
@@ -26,7 +26,7 @@ const WithdrawEntityWidget = (props: {
 
   const formSubmit = (event: any) => {
     props.entity.withdrawFund(
-      props.userId,
+      props.memberId,
       fieldValue.amount,
       fieldValue.token,
     ).then(() => setSubmit(2)).catch(error => setError(error.message))

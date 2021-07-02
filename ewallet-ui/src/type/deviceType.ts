@@ -1,7 +1,7 @@
 type DeviceType = {
-  name: string
-  address: string
-  disable: boolean
+  name: string,
+  address: string,
+  disable: boolean,
 }
 
 const deviceListToJson = (deviceList: Array<DeviceType>) => {

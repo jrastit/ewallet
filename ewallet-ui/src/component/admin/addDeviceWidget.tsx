@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { Entity } from '../../class/Entity'
 
 const AddDeviceWidget = (props: {
-  userId: number
+  memberId: number,
   entity: Entity,
 }) => {
 
@@ -25,8 +25,8 @@ const AddDeviceWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.addDeviceForUserId(
-      props.userId,
+    props.entity.addDeviceForMemberId(
+      props.memberId,
       fieldValue.name,
       fieldValue.wallet,
     ).then(() => {

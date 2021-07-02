@@ -4,12 +4,12 @@ import Button from 'react-bootstrap/Button';
 
 import { Entity } from '../../class/Entity'
 
-const AddUserWidget = (props: {
+const AddMemberWidget = (props: {
   entity: Entity,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
-    userName: '',
+    memberName: '',
     deviceName: '',
     wallet: '',
   })
@@ -25,9 +25,9 @@ const AddUserWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.addUser(
+    props.entity.addMember(
       fieldValue.wallet,
-      fieldValue.userName,
+      fieldValue.memberName,
       fieldValue.deviceName,
     ).then(() => {
       setSubmit(2)
@@ -47,8 +47,8 @@ const AddUserWidget = (props: {
   else if (submit === 0) return (
     <Form onSubmit={formSubmit}>
       <Form.Group>
-        <Form.Label>User name:</Form.Label>
-        <Form.Control type="text" name="userName" value={fieldValue.userName} onChange={handleChange} />
+        <Form.Label>Member name:</Form.Label>
+        <Form.Control type="text" name="memberName" value={fieldValue.memberName} onChange={handleChange} />
       </Form.Group>
       <Form.Group>
         <Form.Label>Device name:</Form.Label>
@@ -58,18 +58,18 @@ const AddUserWidget = (props: {
         <Form.Label>Wallet address:</Form.Label>
         <Form.Control type="text" name="wallet" value={fieldValue.wallet} onChange={handleChange} />
       </Form.Group>
-      {fieldValue.userName && fieldValue.deviceName && fieldValue.wallet &&
+      {fieldValue.memberName && fieldValue.deviceName && fieldValue.wallet &&
         <Form.Group><Button variant="info" type="submit">Ok</Button></Form.Group>
       }
     </Form>
   )
   else if (submit === 1) return (
-    <label>User creation...</label>
+    <label>Member creation...</label>
   )
   else return (<div>
-    <label>User created</label>&nbsp;&nbsp;
+    <label>Member created</label>&nbsp;&nbsp;
     <Button variant="primary" onClick={() => { setFieldValue(0); setSubmit(0) }}>Ok</Button>
   </div>)
 }
 
-export default AddUserWidget
+export default AddMemberWidget
