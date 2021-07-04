@@ -20,7 +20,7 @@
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "compile": "npx solc -o src/contract/solidity/bin --optimize --optimize-runs=10000 --bin --abi contract/solidity/EWallet.sol contract/solidity/IERC20.sol",
+    "compile": "npx solc -o src/contract/solidity/bin --optimize --optimize-runs=10000 --bin --abi contract/solidity/EWalletRegistry.sol contract/solidity/EWallet.sol contract/solidity/IERC20.sol",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

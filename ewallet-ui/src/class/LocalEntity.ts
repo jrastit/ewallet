@@ -29,7 +29,7 @@ class LocalEntity extends Entity {
 
   constructor(
     props: {
-      name: string,
+      name?: string | undefined,
       networkName: string,
 
       address?: string,
@@ -120,7 +120,7 @@ class LocalEntity extends Entity {
   }
 
   save() {
-    localStorage.setItem("entity", this.toJson())
+    localStorage.setItem("network_" + this.networkName + "_entity_" + this.name, this.toJson())
   }
 
   addLog(

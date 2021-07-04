@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import {ethers} from 'ethers'
+import { ethers } from 'ethers'
 
 import { Entity } from '../../class/Entity'
 import { LocalEntity } from '../../class/LocalEntity'
 import { ETHEntity } from '../../class/ETHEntity'
+import { EntityRegistry } from '../../class/EntityRegistry'
 
 const CreateEntityWidget = (props: {
   setEntity: (entity: Entity) => void,
   networkName: string,
   address: string,
-  signer: ethers.Signer
+  signer: ethers.Signer,
+  entityRegistry: EntityRegistry,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
@@ -30,8 +32,9 @@ const CreateEntityWidget = (props: {
     }
   }
 
-  const formSubmit = (event: any) => {
-    if (fieldValue.place === 'local'){
+  const formSubmit = async (event: any) => {
+    setSubmit(1)
+    if (fieldValue.place === 'local') {
       new LocalEntity({
         name: fieldValue.name,
         networkName: props.networkName,
@@ -45,23 +48,25 @@ const CreateEntityWidget = (props: {
         setError(error.message)
       })
 
-    }else{
-      new ETHEntity({
-        name: fieldValue.name,
-        networkName: props.networkName,
-        address: props.address,
-        signer: props.signer,
-        memberName: fieldValue.memberName,
-        deviceName: fieldValue.deviceName,
-      }).init().then(entity => {
-        props.setEntity(entity)
-        setSubmit(2)
-      }).catch((error) => {
-        setError(error.message)
-      })
+    } else {
+        new ETHEntity({
+          name: fieldValue.name,
+          networkName: props.networkName,
+          address: props.address,
+          signer: props.signer,
+          memberName: fieldValue.memberName,
+          deviceName: fieldValue.deviceName,
+          entityRegistry: props.entityRegistry,
+        }).init().then(entity => {
+          props.setEntity(entity)
+          setSubmit(2)
+        }).catch((error) => {
+          setError(error.message)
+        })
+
     }
     event.preventDefault()
-    setSubmit(1)
+
   }
 
   if (error) return (

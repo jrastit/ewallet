@@ -1,8 +1,6 @@
 import { ethers } from 'ethers'
 
-import {
-  getNetworkConfig,
-} from '../util/configNetwork'
+import { network as networkList } from '../config/network.json'
 
 declare global {
   interface Window {
@@ -16,71 +14,53 @@ const addHooks = () => {
 }
 
 const getWallet = (
-  networkName: string,
   setWallet: (
     networkName: string,
     wallet: ethers.Wallet
   ) => void, setError: (error: string) => void) => {
-  const {
-    chainId,
-  } = getNetworkConfig(networkName)
   const web3Provider = new ethers.providers.Web3Provider(
-    window.ethereum,
-    {
-      name: networkName,
-      chainId: chainId
-    })
+    window.ethereum)
   web3Provider.getNetwork().then(
     (network) => {
-      if (network.chainId !== chainId) {
-        setError("Wrong network in Metamask, please use " +
-          networkName +
-          "(" +
-          chainId +
-          ")"
-        )
-      } else {
-        const wallet: any = web3Provider.getSigner()
-        setWallet(networkName, wallet)
+      const wallet: any = web3Provider.getSigner()
+      let networkName = network.name
+      if (networkName === 'unknown') {
+        const chainId = network.chainId
+        networkName = networkList.filter((_networkItem) => _networkItem.chainId === chainId).map((_networkItem) => _networkItem.name)[0]
+        if (!networkName) networkName = network.chainId.toString()
       }
+      setWallet(networkName, wallet)
     }).catch((error) => {
       console.error("error in get network ", error)
-      setError("Wrong network in Metamask, please use " +
-        networkName +
-        " (" +
-        chainId +
-        ")"
-      )
+      setError("Error in Metamask : " + error.message)
     })
 }
 
 const getAddress = (
   networkName: string,
   wallet: ethers.Wallet,
-  setAddress: (address: string, wallet: ethers.Wallet | undefined) => void
+  setAddress: (networkName: string | undefined, address: string, wallet: ethers.Wallet | undefined) => void
 ) => {
   wallet.getAddress().then(
     (address) => {
-      setAddress(address, wallet)
+      setAddress(networkName, address, wallet)
     }).catch(
       err => {
         console.error("error in get address ", err)
-        setAddress("error", undefined)
+        setAddress(undefined, "error", undefined)
       }
     )
 }
 
 const getBalance = async (
-  networkName: string,
   wallet: ethers.Wallet,
   address: string,
   setBalance: (balance: ethers.BigNumber) => void
 ) => {
   wallet.provider.getBalance(address).then(
     (balance) => {
-      //console.log("balance", balance)
       setBalance(balance)
-    }).catch(err => console.log("error in get balance ", err))
+    }).catch(err => console.error("error in get balance ", err))
 }
 
 export {

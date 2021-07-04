@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { ethers } from 'ethers'
-import logo from './logo.svg';
+import logo from './logo.png';
 import './App.css';
 import AppNav from './AppNav'
-import {
-  Entity,
-} from './class/Entity'
+import { Entity } from './class/Entity'
+import { EntityRegistry } from './class/EntityRegistry'
 
 import {
   entityLoad,
@@ -19,8 +18,11 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import DisplayEntityOperationList from './component/display/displayEntityOperationList'
-import CreateEntityWidget from './component/admin/createEntityWidget'
 import PayEntity from './component/transaction/payEntityWidget'
+import EntityRegistryWidget from './component/entity/EntityRegistryWidget'
+import EntityListWidget from './component/entity/EntityListWidget'
+import CreateEntityWidget from './component/admin/createEntityWidget'
+
 import {
   getAddress,
   getWallet,
@@ -29,18 +31,19 @@ import {
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  //const [networkName, setNetworkName] = useState('kovan')
-  const networkName = 'kovan'
   const [isHome, setIsHome] = useState(1);
   const [walletInfo, setWalletInfo] = useState<{
+    networkName : string | undefined,
     address: string,
     wallet: ethers.Wallet | undefined,
     error: string | undefined
   }>({
+    networkName : undefined,
     address: "Loading...",
     wallet: undefined,
     error: undefined,
   })
+  const [entityRegistry, setEntityRegistry] = useState<EntityRegistry>()
   const [entity, setEntity] = useState<Entity | null | undefined>(null)
   const [memberId, setMemberId] = useState(-1)
 
@@ -54,10 +57,15 @@ function App() {
     ).catch((err) => setMemberId(-1))
   }
 
-  const updateAddress = (_address: string, _wallet: ethers.Wallet | undefined) => {
+  const updateAddress = (_networkName : string | undefined, _address: string, _wallet: ethers.Wallet | undefined) => {
     console.log("address", _address)
     if (walletInfo.address !== _address) {
-      setWalletInfo({ address: _address, wallet: _wallet, error: undefined })
+      setWalletInfo({
+        networkName : _networkName,
+        address: _address,
+        wallet: _wallet,
+        error: undefined
+      })
     }
   }
 
@@ -67,12 +75,12 @@ function App() {
 
   const updateError = (_error: string) => {
     console.error("error : ", _error)
-    setWalletInfo({ address: "error", wallet: undefined, error: _error })
+    setWalletInfo({networkName:undefined, address: "error", wallet: undefined, error: _error })
   }
 
   useEffect(() => {
     if (!walletInfo.wallet) {
-      getWallet(networkName, updateWallet, updateError)
+      getWallet(updateWallet, updateError)
       addHooks()
     }else if (!entity) {
       entityLoad(walletInfo.wallet).then((storageEntity) => {
@@ -92,7 +100,7 @@ function App() {
           setIsHome={setIsHome}
           setEntity={setEntity}
           entity={entity}
-          networkName={networkName}
+          networkName={walletInfo.networkName}
           address={walletInfo.address}
           error={walletInfo.error}
         />}
@@ -113,15 +121,36 @@ function App() {
           </div>
         }
 
-        {!isHome && !entity && !!walletInfo.wallet &&
-          <BoxWidget title='Create Entity'>
-            <CreateEntityWidget
+        {!isHome && !entity && !!walletInfo.wallet && !!walletInfo.networkName &&
+          <BoxWidget title='Select Entity Registry'>
+            <EntityRegistryWidget
               setEntity={setEntity}
-              networkName={networkName}
-              address={walletInfo.address}
+              networkName={walletInfo.networkName}
               signer={walletInfo.wallet}
+              address={walletInfo.address}
+              entityRegistry={entityRegistry}
+              setEntityRegistry={setEntityRegistry}
             />
           </BoxWidget>
+        }
+        {!isHome && !entity && entityRegistry && !!walletInfo.wallet && !!walletInfo.networkName &&
+          <Fragment>
+          <BoxWidget title='Entity liste'>
+          <EntityListWidget
+            setEntity={setEntity}
+            entityRegistry={entityRegistry}
+          />
+          </BoxWidget>
+          <BoxWidget title='Create New Entity'>
+          <CreateEntityWidget
+            setEntity={setEntity}
+            networkName={walletInfo.networkName}
+            signer={walletInfo.wallet}
+            address={walletInfo.address}
+            entityRegistry={entityRegistry}
+          />
+          </BoxWidget>
+          </Fragment>
         }
         {!isHome && !!entity && memberId >= 0 &&
           <Row>

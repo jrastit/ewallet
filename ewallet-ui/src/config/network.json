@@ -1,14 +1,21 @@
 {
-  "network": {
-    "kovan": {
+  "network": [
+    {
+      "name": "kovan",
       "url": "https://kovan.infura.io/v3/5d37c494621a43558d77c90e368d4022",
       "chainId": 42,
       "blockExplorerTxPrefix": "https://kovan.etherscan.io/tx/",
       "faucet": "https://faucet.kovan.network"
     },
-    "ganache": {
+    {
+      "name" : "ganache",
       "url": "http://localhost:8545",
       "chainId": 1337
+    },
+    {
+      "name" : "oasisParatime",
+      "url": "https://rpc.oasiseth.org:8545",
+      "chainId": 69
     }
-  }
+  ]
 }

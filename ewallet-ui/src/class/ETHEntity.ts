@@ -1,4 +1,5 @@
 import { LocalEntity } from './LocalEntity'
+import { EntityRegistry } from './EntityRegistry'
 
 import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
@@ -19,9 +20,11 @@ class ETHEntity extends LocalEntity {
   memberName?: string
   deviceName?: string
 
+  entityRegistry?: EntityRegistry
+
   constructor(
     props: {
-      name: string,
+      name?: string | undefined,
       networkName: string,
       signer: ethers.Signer,
 
@@ -30,6 +33,7 @@ class ETHEntity extends LocalEntity {
       deviceName?: string,
 
       contractAddress?: string,
+      entityRegistry?: EntityRegistry,
 
       balance?: any,
       blockNumber?: string,
@@ -47,6 +51,7 @@ class ETHEntity extends LocalEntity {
     this.signer = props.signer
     this.deviceName = props.deviceName
     this.memberName = props.memberName
+    this.entityRegistry = props.entityRegistry
 
   }
 
@@ -54,17 +59,19 @@ class ETHEntity extends LocalEntity {
 
     const abi = await (await fetch(abiPath)).text()
 
-    if (!this.contractAddress) {
+    if (this.entityRegistry && this.name && this.memberName && this.deviceName) {
+
+      this.contractAddress = await this.entityRegistry.createEntity(this.name, this.memberName, this.deviceName)
+      console.log("contractAddress" + this.contractAddress)
+
+    }
+    if (!this.contractAddress && !this.entityRegistry) {
 
       const bytecode = await (await fetch(bytecodePath)).text()
 
-
-      console.log("bytecode", bytecode)
-      console.log("abi", abi)
-
       const factory = new ethers.ContractFactory(abi, bytecode, this.signer)
 
-      this.contract = await factory.deploy(this.memberName, this.deviceName)
+      this.contract = await factory.deploy(this.name, this.memberName, this.deviceName)
 
       await this.contract.deployed()
 
@@ -72,11 +79,14 @@ class ETHEntity extends LocalEntity {
 
       this.contractAddress = this.contract.address
       this.save()
-    } else {
+    } else if (this.contractAddress) {
       this.contract = new ethers.Contract(this.contractAddress, abi, this.signer)
       await this.update()
 
+    } else {
+      throw new Error("Entity init fail")
     }
+
     return this
   }
 
@@ -107,8 +117,23 @@ class ETHEntity extends LocalEntity {
     return []
   }
 
+  async updateBalance() {
+    if (this.signer.provider && this.contractAddress) {
+      const ethBalance = await this.signer.provider.getBalance(this.contractAddress)
+      return [{
+        balance: ethBalance,
+        token: 'eth',
+      }]
+    }
+    return []
+
+  }
+
   async update() {
     if (this.contract) {
+      this.name = await this.contract.name()
+      this.balance = await this.updateBalance();
+
       const memberListChainPromise = []
       const memberIdChain = await this.contract.memberId()
       for (let i = 1; i <= memberIdChain; i++) {
@@ -125,7 +150,7 @@ class ETHEntity extends LocalEntity {
               memberName: memberChain.name as string,
               disable: memberChain.disable as boolean,
               device: await this.loadDeviceForMember(id, memberChain.deviceId),
-              balance: [],
+              balance: [{ token: 'eth', balance: memberChain.balanceETH }],
             }
           }
         )
@@ -159,7 +184,7 @@ class ETHEntity extends LocalEntity {
     name: string,
     address: string,
   ) {
-    super.addDeviceForMemberId(
+    await super.addDeviceForMemberId(
       memberId,
       name,
       address,
@@ -167,6 +192,49 @@ class ETHEntity extends LocalEntity {
     if (this.contract) {
       await this.contract.addSelfDevice(name, address)
     }
+  }
+
+  async depositFund(
+    memberId: number,
+    amount: string,
+    tokenName: string,
+  ) {
+    await super.depositFund(
+      memberId,
+      amount,
+      tokenName
+    )
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.depositETH({ value: amountBN })
+        await tx.wait()
+      }
+    }
+    this.update()
+  }
+
+  async withdrawFund(
+    memberId: number,
+    amount: string,
+    tokenName: string,
+  ) {
+    await super.withdrawFund(
+      memberId,
+      amount,
+      tokenName
+    )
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.withdrawETH(amountBN)
+        await tx.wait()
+      }
+    }
+    this.update()
   }
 }
 

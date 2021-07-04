@@ -8,10 +8,6 @@ import {
   Entity,
 } from './class/Entity'
 
-import {
-  entityDelete,
-} from './util/entityStorage'
-
 import WalletWidget from './component/walletWidget'
 
 const AppNav = (props: {
@@ -20,11 +16,11 @@ const AppNav = (props: {
   entity: Entity | undefined | null,
   address: string,
   error: string | undefined,
-  networkName: string,
+  networkName: string | undefined,
 }) => {
   return (
     <Navbar bg="light" expand="lg">
-      <Navbar.Brand href="#home" onClick={() => props.setIsHome(1)}>EWallet</Navbar.Brand>
+      <Navbar.Brand href="#home" onClick={() => props.setIsHome(1)}>EWallet{props.networkName && <> on {props.networkName}</>}</Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
@@ -56,9 +52,8 @@ const AppNav = (props: {
       </Navbar.Brand>
       {!!props.entity &&
         <Button variant="danger" onClick={() => {
-          entityDelete()
           props.setEntity(null)
-        }}>Delete entity</Button>
+        }}>Leave entity</Button>
       }
 
     </Navbar>

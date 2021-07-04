@@ -6,10 +6,10 @@ import { DeviceType } from '../type/deviceType'
 
 class Entity {
 
-  name: string
+  name?: string
 
   constructor(
-    name: string,
+    name: string | undefined,
   ) {
     if (this.constructor === Entity) {
       throw new TypeError('Abstract class "Entity" cannot be instantiated directly');
@@ -132,7 +132,9 @@ class Entity {
     throw new Error('You must implement this function');
   }
 
-
+  async update() {
+    throw new Error('You must implement this function');
+  }
 }
 
 export { Entity }

@@ -25,7 +25,7 @@ const WalletWidget = (props: { address: string, error: string | undefined }) => 
         </p>
       )
     } else if (!props.error && props.address === "error") {
-      console.log("here")
+
       return (
         <p className='button is-link is-rounded'
           role='button'

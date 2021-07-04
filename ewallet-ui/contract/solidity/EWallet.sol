@@ -35,6 +35,8 @@ contract EWallet {
         uint256 balanceETH;
     }
 
+    string public name;
+
     mapping (uint256 => Member) public memberList;
     mapping (string => uint256) public memberListByName;
     mapping (address => uint256) public memberListByAddress;
@@ -205,7 +207,7 @@ contract EWallet {
     function withdrawETH(
         uint256 _amount
     ) public memberEnable deviceEnable {
-        require(memberList[memberListByAddress[msg.sender]].balanceETH < _amount);
+        require(memberList[memberListByAddress[msg.sender]].balanceETH >= _amount, "Not enought found");
         memberList[memberListByAddress[msg.sender]].balanceETH -= _amount;
         payable(msg.sender).transfer(_amount);
     }
@@ -214,7 +216,7 @@ contract EWallet {
         address _tokenAddress,
         uint256 _amount
     ) public memberEnable deviceEnable {
-        require(balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] < _amount);
+        require(balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] >= _amount, "Not enought found");
         IERC20 token = IERC20(_tokenAddress);
         balanceERC20[memberListByAddress[msg.sender]][_tokenAddress] -= _amount;
         token.transfer(msg.sender, _amount);
@@ -223,9 +225,10 @@ contract EWallet {
     /**
      * @dev Set contract deployer as owner
      */
-    constructor(string memory _memberName, string memory _deviceName) {
+    constructor(string memory _name, string memory _memberName, string memory _deviceName) {
+        name = _name;
         memberId = _addMember(_memberName);
-        _addDevice(_deviceName, msg.sender, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor
+        _addDevice(_deviceName, tx.origin, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor
         _setRole(memberId, true, true, true, true, true);
     }
 
