@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import BoxWidget from '../component/boxWidget'
 import DisplayDeviceList from '../component/display/displayDeviceList'
 import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
+import SetAllowanceWidget from '../component/admin/setAllowanceWidget'
 import { Entity } from '../class/Entity'
 import { MemberType } from '../type/memberType'
 import { memberToJson, memberFromJson } from '../type/memberType'
@@ -13,7 +14,6 @@ const AdminMember = (props: {
 }) => {
   const [member, setMember] = useState<MemberType | undefined>()
   const [error, setError] = useState<string | undefined>()
-
 
   const updateMember = (memberId: number, entity: Entity) => {
     entity.getMemberFromId(memberId).then((_member) => {
@@ -47,6 +47,23 @@ const AdminMember = (props: {
           <BoxWidget title={"Member : " + member.memberName}>
             Personal account :
             <DisplayBalanceWidget balance={member.balance} entity={props.entity} />
+            Personal allowance :
+            <DisplayBalanceWidget balance={member.allowance} entity={props.entity} />
+            Role :<br/>
+            {
+              member.role && member.role.map((role) => {
+                if (role.value){
+                  return (<Fragment key={role.name}>{role.name}<br/></Fragment>)
+                }
+                return ""
+              })
+            }
+          </BoxWidget>
+          <BoxWidget title={"Set allowance"}>
+          <SetAllowanceWidget
+            entity={props.entity}
+            memberId={props.memberId}
+          />
           </BoxWidget>
         </div>
       }

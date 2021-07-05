@@ -5,17 +5,28 @@
       "url": "https://kovan.infura.io/v3/5d37c494621a43558d77c90e368d4022",
       "chainId": 42,
       "blockExplorerTxPrefix": "https://kovan.etherscan.io/tx/",
-      "faucet": "https://faucet.kovan.network"
+      "faucet": "https://faucet.kovan.network",
+      "entityRegistryAddress": "0x7fD3c809B37D617f217aF08C5862C2817f33730A"
     },
     {
       "name" : "ganache",
       "url": "http://localhost:8545",
-      "chainId": 1337
+      "chainId": 1337,
+      "entityRegistryAddress": "0xDd65C920a296f5Feeca6e92F86fCd641FE41D5c6"
     },
     {
       "name" : "oasisParatime",
       "url": "https://rpc.oasiseth.org:8545",
-      "chainId": 69
+      "chainId": 69,
+      "entityRegistryAddress": "0x18c246523F98CAa031c8F7deE08cb31Aa338aD07"
+    },
+    {
+      "name" : "Harmony Testnet",
+      "url": "https://api.s0.b.hmny.io",
+      "chainId": 1666700000,
+      "blockExplorerTxPrefix": "https://explorer.pops.one/#/",
+      "faucet": "https://faucet.pops.one/",
+      "entityRegistryAddress": "0xF9d9ca154e54477A0E5B0559895A3FE939d561D5"
     }
   ]
 }

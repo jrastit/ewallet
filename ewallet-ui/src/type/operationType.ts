@@ -9,7 +9,8 @@ type OperationType = {
   message: string,
   category: string,
   balance: Array<BalanceType>,
-  date: Date
+  date: Date,
+  temporary?: boolean,
 }
 
 const operationToString = (operation: OperationType | undefined) => {
@@ -20,6 +21,7 @@ const operationToString = (operation: OperationType | undefined) => {
     category: operation.category,
     balance: operation.balance.map(balanceToString),
     date: operation.date.toString(),
+    temporary: operation.temporary,
   }
 }
 
@@ -31,6 +33,7 @@ const operationFromString = (operation: any) => {
     category: operation.category,
     balance: operation.balance.map(balanceFromString),
     date: Date.parse(operation.date),
+    temporary: operation.temporary,
   }
 }
 

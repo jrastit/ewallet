@@ -3,7 +3,9 @@ import { EntityRegistry } from '../../class/EntityRegistry'
 import { Entity } from '../../class/Entity'
 import { ethers } from 'ethers'
 import { Button } from 'react-bootstrap'
-import { entityRegistryLoad, entityRegistryDelete } from '../../util/entityRegistryStorage'
+import { entityRegistryFromAddress, entityRegistryLoad, entityRegistryDelete, entityRegistryHasCache } from '../../util/entityRegistryStorage'
+import { getEntityRegistryAddress } from '../../util/networkInfo'
+
 
 const EntityListWidget = (props: {
   networkName: string,
@@ -17,6 +19,9 @@ const EntityListWidget = (props: {
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
 
+  const entityRegistryAddress = getEntityRegistryAddress(props.networkName)
+  const registryCache = entityRegistryHasCache(props.networkName)
+
   const deleteEntityRegistry = () => {
     entityRegistryDelete(props.networkName)
     props.setEntityRegistry(undefined)
@@ -28,8 +33,8 @@ const EntityListWidget = (props: {
     entityRegistryLoad(props.networkName, props.signer).then(
       _entityRegistry => {
         if (_entityRegistry) {
-          props.setEntityRegistry(_entityRegistry)
           setSubmit(2)
+          props.setEntityRegistry(_entityRegistry)
         } else {
           setError("error loading entity registry")
         }
@@ -42,18 +47,36 @@ const EntityListWidget = (props: {
   }
 
   const newEntityRegistry = () => {
+    setSubmit(1)
     new EntityRegistry({
       networkName: props.networkName,
       signer: props.signer,
     }).init().then(_entityRegistry => {
       props.setEntityRegistry(_entityRegistry)
+      setSubmit(2)
     }).catch((error) => {
+      console.error(error)
+      setError(error.message)
+    })
+  }
+
+  const loadEntityFirst = async () => {
+    setSubmit(1)
+    entityRegistryFromAddress(entityRegistryAddress, props.networkName, props.signer).then(
+      (_entityRegistry) => {
+        setSubmit(2)
+        if (_entityRegistry){
+          props.setEntityRegistry(_entityRegistry)
+        }
+      }
+    ).catch((error) => {
+      console.error(error)
       setError(error.message)
     })
   }
 
   useEffect(() => {
-    //loadEntityRegistry()
+
   })
 
   if (error) return (
@@ -65,9 +88,19 @@ const EntityListWidget = (props: {
 
   if (submit === 0) return (
     <Fragment>
+      {props.entityRegistry && (
+        <div>Address:<br/>{props.entityRegistry.contractAddress}</div>
+      )}
+
       {!props.entityRegistry &&
         <Fragment>
-          <div><Button variant="info" onClick={loadEntityRegistry}>Load entity registry</Button></div>
+          { entityRegistryAddress &&
+            <div><Button variant="info" onClick={loadEntityFirst}>Load default entity registry</Button><br/><br/></div>
+          }
+          { registryCache &&
+            <div><Button variant="info" onClick={loadEntityRegistry}>Load saved entity registry</Button><br/><br/></div>
+          }
+
           <div><Button variant="primary" onClick={newEntityRegistry}>Create entity registry for {props.networkName}</Button></div>
         </Fragment>
       }

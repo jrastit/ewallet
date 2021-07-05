@@ -3,7 +3,9 @@ import { EntityRegistry } from './EntityRegistry'
 
 import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
+import { BalanceType } from '../type/balanceType'
 import { DeviceType } from '../type/deviceType'
+import { SendToApproveType } from '../type/sendToApproveType'
 
 import { ethers } from 'ethers'
 
@@ -145,17 +147,100 @@ class ETHEntity extends LocalEntity {
         memberListChain.map(
           async (memberChain): Promise<MemberType> => {
             id++
+            const role = []
+            role.push({
+              name: "manageAllowance",
+              value: memberChain.role.manageAllowance
+            })
+            role.push({
+              name: "manageDevice",
+              value: memberChain.role.manageDevice
+            })
+            role.push({
+              name: "manageMember",
+              value: memberChain.role.manageMember
+            })
+            role.push({
+              name: "manageRole",
+              value: memberChain.role.manageRole
+            })
+            role.push({
+              name: "manageSelfDevice",
+              value: memberChain.role.manageSelfDevice
+            })
+            role.push({
+              name: "manageSelfMember",
+              value: memberChain.role.manageSelfMember
+            })
             return {
               memberId: id,
               memberName: memberChain.name as string,
               disable: memberChain.disable as boolean,
               device: await this.loadDeviceForMember(id, memberChain.deviceId),
               balance: [{ token: 'eth', balance: memberChain.balanceETH }],
+              allowance: [{ token: 'eth', balance: memberChain.allowanceETH }],
+              role: role,
             }
           }
         )
       )
       this.memberId = memberIdChain
+
+      const sendToApproveListChainPromise = []
+      const sendToApproveIdChain = await this.contract.sendToApproveId()
+      for (let i = 1; i <= sendToApproveIdChain; i++) {
+        sendToApproveListChainPromise.push(this.contract.sendToApproveList(i))
+      }
+      const sendToApproveListChain = await Promise.all(sendToApproveListChainPromise)
+      id = 0
+      this.sendToApproveList = await Promise.all(
+        sendToApproveListChain.map(
+          async (sendToApproveChain): Promise<SendToApproveType> => {
+            id++
+            return {
+              id: id,
+              initiator: sendToApproveChain.initiator,
+              validator: sendToApproveChain.validator,
+              to: sendToApproveChain.to,
+              tokenName: 'eth',
+              value: sendToApproveChain.value,
+              name: sendToApproveChain.name,
+              reason: sendToApproveChain.reason,
+            }
+          }
+        )
+      )
+      //this.sendToApproveId = this.sendToApproveIdChain
+
+      const eventFilter = this.contract.filters.Operation()
+      const operationListChain = await this.contract.queryFilter(eventFilter)
+      this.operationList = operationListChain.map(operationChain => {
+        if (operationChain.args) {
+          return {
+            blockNumber: ethers.BigNumber.from(operationChain.blockNumber),
+            memberId: operationChain.args._memberId.toNumber(),
+            message: operationChain.args._name ?
+              operationChain.args._name + ' : ' + operationChain.args._reason :
+              operationChain.args._reason,
+            category: operationChain.args._reason,
+            balance: [{
+              token: 'eth',
+              balance: operationChain.args._from !== "0x0000000000000000000000000000000000000000" ?
+                operationChain.args._value :
+                ethers.BigNumber.from(0).sub(operationChain.args._value)
+            }],
+            date: new Date(),
+          }
+        }
+        return {
+          blockNumber: ethers.BigNumber.from(0),
+          memberId: 0,
+          message: "error",
+          category: "error",
+          balance: [] as BalanceType[],
+          date: new Date(),
+        }
+      })
     }
     console.log("loaded memberList ", this.memberList)
 
@@ -231,6 +316,108 @@ class ETHEntity extends LocalEntity {
     if (token.name === 'eth') {
       if (this.contract) {
         const tx = await this.contract.withdrawETH(amountBN)
+        await tx.wait()
+      }
+    }
+    this.update()
+  }
+
+  async setAllowance(
+    memberId: number,
+    amount: string,
+    tokenName: string,
+  ) {
+    await super.setAllowance(
+      memberId,
+      amount,
+      tokenName
+    )
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.allowanceETH(amountBN, memberId)
+        await tx.wait()
+      }
+    }
+    this.update()
+  }
+
+  async send(
+    memberId: number,
+    to: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    await super.send(
+      memberId,
+      to,
+      amount,
+      tokenName,
+      name,
+      reason,
+    )
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.sendETH(to, amountBN, name, reason)
+        await tx.wait()
+      }
+    }
+    this.update()
+  }
+
+  async sendToApprove(
+    memberId: number,
+    to: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    await super.sendToApprove(
+      memberId,
+      to,
+      amount,
+      tokenName,
+      name,
+      reason,
+    )
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.sendETHToApprove(to, amountBN, name, reason)
+        await tx.wait()
+      }
+    }
+    this.update()
+  }
+
+  async pay(
+    memberId: number,
+    from: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    await super.pay(
+      memberId,
+      from,
+      amount,
+      tokenName,
+      name,
+      reason,
+    )
+    if (token.name === 'eth') {
+      if (this.contract) {
+        const tx = await this.contract.receiveETH(name, reason, { value: amountBN })
         await tx.wait()
       }
     }

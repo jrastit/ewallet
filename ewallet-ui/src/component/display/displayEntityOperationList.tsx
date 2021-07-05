@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Entity } from '../../class/Entity'
 import { OperationType } from '../../type/operationType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
-import ListGroup from 'react-bootstrap/ListGroup';
+import {Spinner, ListGroup} from 'react-bootstrap'
 
 
 const DisplayEntityOperation = (props: { entity: Entity }) => {
@@ -12,7 +12,7 @@ const DisplayEntityOperation = (props: { entity: Entity }) => {
 
   const updateOperation = (entity: Entity) => {
     entity.getOperationList().then((_operationList) => {
-      if (!operationList || _operationList.length !== operationList.length) {
+      if (!operationList || JSON.stringify(_operationList) !== JSON.stringify(operationList)) {
         setOperationList([..._operationList])
       }
     }).catch((_error) => {
@@ -37,7 +37,11 @@ const DisplayEntityOperation = (props: { entity: Entity }) => {
         key={operation.blockNumber.toString()}
         variant={operation.balance[0] &&
           operation.balance[0].balance.lt(0) ? "danger" : "success"}
-      >
+      > { operation.temporary && (
+        <Spinner animation="border" role="status">
+          <span className="sr-only">...</span>
+        </Spinner>
+        )}
         {operation.message}
         <DisplayBalanceWidget balance={operation.balance} entity={props.entity} />
       </ListGroup.Item>

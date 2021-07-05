@@ -11,6 +11,27 @@ const entityRegistryFromJson = (json: string | null, signer?: ethers.Signer) => 
   }
 }
 
+const entityRegistryFromAddress = async (
+  entityRegistryAddress: string, networkName: string, signer?: ethers.Signer
+) => {
+  console.log("entityRegistryAddress", entityRegistryAddress)
+  if (entityRegistryAddress && signer) {
+    const entityRegistry = new EntityRegistry({
+      signer,
+      networkName,
+      contractAddress: entityRegistryAddress,
+    })
+    return await entityRegistry.init()
+  }
+}
+
+const entityRegistryHasCache = (networkName: string) => {
+  if (localStorage.getItem("entityRegistry_" + networkName)) {
+    return true
+  }
+  return false
+}
+
 const entityRegistryLoad = async (networkName: string, signer?: ethers.Signer) => {
   let entityRegistry
   try {
@@ -31,6 +52,8 @@ const entityRegistryDelete = (networkName: string) => {
 }
 
 export {
+  entityRegistryHasCache,
+  entityRegistryFromAddress,
   entityRegistryFromJson,
   entityRegistryLoad,
   entityRegistryDelete

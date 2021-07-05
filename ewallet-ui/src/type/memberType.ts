@@ -7,7 +7,9 @@ type MemberType = {
   memberId: number,
   memberName: string,
   balance: Array<BalanceType>,
+  allowance: Array<BalanceType>,
   device: Array<DeviceType>,
+  role?: Array<{ name: string, value: boolean }>
   disable: boolean,
 }
 
@@ -17,8 +19,10 @@ const memberToString = (member: MemberType) => {
       memberId: member.memberId,
       memberName: member.memberName,
       balance: member.balance.map(balanceToString),
+      allowance: member.allowance.map(balanceToString),
       device: member.device,
       disable: member.disable,
+      role: member.role,
     }
   }
 }
@@ -29,8 +33,10 @@ const memberFromString = (member: any) => {
       memberId: member.memberId,
       memberName: member.memberName,
       balance: member.balance.map(balanceFromString),
+      allowance: member.allowance.map(balanceFromString),
       device: member.device,
       disable: member.disable,
+      role: member.role,
     }
   }
 }
@@ -44,8 +50,6 @@ const memberListFromJson = (memberList: string | undefined) => {
   if (memberList)
     return JSON.parse(memberList).map(memberFromString)
 }
-
-
 
 const memberToJson = (member: MemberType) => {
   if (member)

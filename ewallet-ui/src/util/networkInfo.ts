@@ -13,6 +13,12 @@ const addHooks = () => {
   window.ethereum.on('accountsChanged', (accounts: Array<string>) => { console.log(accounts); window.location.reload() });
 }
 
+const getEntityRegistryAddress = (
+  networkName: string,
+) => {
+  return (networkList as any[]).filter((_networkItem) => _networkItem.name === networkName).map((_networkItem) => _networkItem.entityRegistryAddress)[0]
+}
+
 const getWallet = (
   setWallet: (
     networkName: string,
@@ -68,4 +74,5 @@ export {
   getWallet,
   getBalance,
   getAddress,
+  getEntityRegistryAddress
 }

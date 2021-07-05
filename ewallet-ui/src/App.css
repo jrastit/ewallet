@@ -64,3 +64,9 @@
     transform: rotate(360deg);
   }
 }
+
+.flexCentered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

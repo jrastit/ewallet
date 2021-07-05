@@ -2,18 +2,20 @@ import { useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import TokenSelectWidget from '../util/tokenSelectWidget'
+import SelectWidget from '../selectWidget'
 import { Entity } from '../../class/Entity'
 
-const PayEntityWidget = (props: {
+const SendWidget = (props: {
   memberId: number,
   entity: Entity,
-  address: string,
 }) => {
   const [fieldValue, setFieldValue] = useState<any>({
+    to: '',
     token: '',
     amount: '',
     reason: '',
     reference: '',
+    type: '',
   })
   const [submit, setSubmit] = useState(0)
   const [error, setError] = useState<string | null>()
@@ -28,14 +30,26 @@ const PayEntityWidget = (props: {
 
   const formSubmit = (event: any) => {
     setSubmit(1)
-    props.entity.pay(
-      props.memberId,
-      props.address,
-      fieldValue.amount,
-      fieldValue.token,
-      fieldValue.name,
-      fieldValue.reason,
-    ).then(() => setSubmit(2)).catch(error => setError(error.message))
+    if (fieldValue.type === 'validation'){
+      props.entity.sendToApprove(
+        props.memberId,
+        fieldValue.to,
+        fieldValue.amount,
+        fieldValue.token,
+        fieldValue.name,
+        fieldValue.reason,
+      ).then(() => setSubmit(2)).catch(error => setError(error.message))
+    } else {
+      props.entity.send(
+        props.memberId,
+        fieldValue.to,
+        fieldValue.amount,
+        fieldValue.token,
+        fieldValue.name,
+        fieldValue.reason,
+      ).then(() => setSubmit(2)).catch(error => setError(error.message))
+
+    }
     event.preventDefault()
 
   }
@@ -43,11 +57,32 @@ const PayEntityWidget = (props: {
   if (error) return (
     <div>
       <label>{error}</label>&nbsp;&nbsp;
-      <Button variant="danger" onClick={() => { setFieldValue(undefined); setSubmit(0); setError(undefined); props.entity.update() }}>Ok</Button>
+      <Button variant="danger" onClick={() => { setFieldValue(0); setSubmit(0); setError(undefined); props.entity.update() }}>Ok</Button>
     </div>
   )
   else if (submit === 0) return (
     <Form onSubmit={formSubmit}>
+    <Form.Group>
+      <Form.Label>Pay</Form.Label>
+      <SelectWidget
+      name="type"
+      value={fieldValue.type}
+      onChange={handleChange}
+      option={[
+        {name:'instant', value:"instant"},
+        {name:'request validation', value:"validation"}
+      ]}
+      />
+    </Form.Group>
+    <Form.Group>
+      <Form.Label>To</Form.Label>
+      <Form.Control
+        type="text"
+        name="to"
+        value={fieldValue.to}
+        onChange={handleChange}
+      />
+    </Form.Group>
       <Form.Group>
         <Form.Label>Amount in</Form.Label>
         <TokenSelectWidget
@@ -81,7 +116,7 @@ const PayEntityWidget = (props: {
           onChange={handleChange}
         />
       </Form.Group>
-      {fieldValue.token && fieldValue.amount && fieldValue.name && fieldValue.reason &&
+      {fieldValue.to && fieldValue.token && fieldValue.amount && fieldValue.name && fieldValue.reason &&
         <Form.Group><Button variant="info" type="submit">Submit</Button></Form.Group>
       }
     </Form>
@@ -95,4 +130,4 @@ const PayEntityWidget = (props: {
   </div>)
 }
 
-export default PayEntityWidget
+export default SendWidget

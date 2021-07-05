@@ -1,5 +1,6 @@
 import { Entity } from './Entity'
 
+import { SendToApproveType } from '../type/sendToApproveType'
 import { OperationType } from '../type/operationType'
 import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
@@ -19,7 +20,11 @@ class LocalEntity extends Entity {
 
   operationList: Array<OperationType>
 
+  sendToApproveList: Array<SendToApproveType>
+
   memberId: number
+
+  sendToApproveId: number
 
   memberList: Array<MemberType>
 
@@ -40,6 +45,7 @@ class LocalEntity extends Entity {
       blockNumber?: string,
       operationList?: any,
       memberId?: number,
+      sendToApproveId?: number,
       memberList?: any,
       tokenList?: Array<TokenType>,
     }
@@ -52,7 +58,9 @@ class LocalEntity extends Entity {
     this.balance = []
     this.blockNumber = ethers.BigNumber.from(0)
     this.memberId = 0
+    this.sendToApproveId = 0
     this.memberList = []
+    this.sendToApproveList = []
     this.tokenList = [{
       name: 'eth',
       niceName: 'ether',
@@ -132,10 +140,11 @@ class LocalEntity extends Entity {
     this.operationList.push({
       blockNumber: this.blockNumber,
       memberId,
-      message,
+      message: message,
       category,
       balance,
-      date: new Date()
+      date: new Date(),
+      temporary: true,
     })
   }
 
@@ -149,6 +158,10 @@ class LocalEntity extends Entity {
 
   async getOperationList(): Promise<OperationType[]> {
     return this.operationList
+  }
+
+  async getSendToApproveList(): Promise<SendToApproveType[]> {
+    return this.sendToApproveList
   }
 
   async getMemberList(): Promise<MemberType[]> {
@@ -181,20 +194,20 @@ class LocalEntity extends Entity {
       memberId: this.memberId,
       memberName,
       balance: [],
+      allowance: [],
       device: [],
       disable: false,
     })
+    this.save()
     try {
-      await this.addDeviceForMemberId(this.memberId, deviceName, memberWallet)
+      await this._addDeviceForMemberId(this.memberId, deviceName, memberWallet)
+      this.save()
     } catch (err) {
       throw err
     }
-
-
-    this.save()
   }
 
-  async addDeviceForMemberId(
+  async _addDeviceForMemberId(
     memberId: number,
     name: string,
     address: string,
@@ -219,6 +232,18 @@ class LocalEntity extends Entity {
       address,
       disable: false,
     })
+  }
+
+  async addDeviceForMemberId(
+    memberId: number,
+    name: string,
+    address: string,
+  ) {
+    this._addDeviceForMemberId(
+      memberId,
+      name,
+      address,
+    )
     this.save()
   }
 
@@ -299,13 +324,87 @@ class LocalEntity extends Entity {
     }
   }
 
-  async pay(
+  async send(
     memberId: number,
+    to: string,
     amount: string,
     tokenName: string,
     name: string,
-    subject: string,
-    address: string,
+    reason: string,
+  ) {
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (amountBN.lte(0)) {
+      throw new Error("Amount should be a positive value")
+    }
+    const balance = [{ token: token.name, balance: amountBN }]
+    if (balanceGte(this.balance, balance)) {
+      const member = await this.getMemberFromId(memberId)
+      if (balanceGte(member.allowance, balance)) {
+        balanceSub(member.allowance, balance)
+        balanceSub(this.balance, balance)
+        console.log("Send to " + to)
+        this.addLog(
+          memberId,
+          name + " : " + reason,
+          "debit",
+          [{ token: token.name, balance: ethers.BigNumber.from(0).sub(amountBN) }],
+        )
+        this.save()
+      } else {
+        throw new Error("Not enought member allowance")
+      }
+    } else {
+      throw new Error("Not enought fund")
+    }
+  }
+
+  async sendToApprove(
+    memberId: number,
+    to: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (amountBN.lte(0)) {
+      throw new Error("Amount should be a positive value")
+    }
+    this.sendToApproveId++
+    this.sendToApproveList.push({
+      id: this.sendToApproveId,
+      initiator: memberId,
+      to,
+      tokenName,
+      value: amountBN,
+      name,
+      reason,
+    })
+  }
+
+  async setAllowance(
+    memberId: number,
+    amount: string,
+    tokenName: string,
+  ) {
+    const token = await this.getToken(tokenName)
+    const amountBN = ethers.utils.parseUnits(amount, token.decimal)
+    if (amountBN.lt(0)) {
+      throw new Error("Amount should be a positive value")
+    }
+    const member = await this.getMemberFromId(memberId)
+    member.allowance = [{ token: token.name, balance: amountBN }]
+  }
+
+  async pay(
+    memberId: number,
+    from: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
   ) {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
@@ -314,9 +413,10 @@ class LocalEntity extends Entity {
     }
     const balance = [{ token: token.name, balance: amountBN }]
     balanceAdd(this.balance, balance)
+    console.log("Pay from " + from)
     this.addLog(
       memberId,
-      name + " : " + subject,
+      name + " : " + reason,
       "credit",
       balance,
     )

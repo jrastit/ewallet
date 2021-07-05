@@ -36,9 +36,15 @@ const DisplayMemberList = (props: { entity: Entity }) => {
   const displayMember = (member: MemberType) => {
     return (
       <ListGroup.Item key={member.memberId} variant={member.disable ? "danger" : "success"}>
-        {member.memberName}
+        <b>{member.memberName}</b><br/>
+        Balance:
         <DisplayBalanceWidget
           balance={member.balance}
+          entity={props.entity}
+        />
+        Allowance:
+        <DisplayBalanceWidget
+          balance={member.allowance}
           entity={props.entity}
         />
       </ListGroup.Item>

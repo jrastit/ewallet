@@ -3,8 +3,6 @@ import BoxWidget from '../component/boxWidget'
 import DisplayEntityBalance from '../component/display/displayEntityBalance'
 import FundEntityWidget from '../component/admin/fundEntityWidget'
 import WithdrawEntityWidget from '../component/admin/withdrawEntityWidget'
-import DisplayMemberList from '../component/display/displayMemberList'
-import AddMemberWidget from '../component/admin/addMemberWidget'
 
 const AdminEntity = (props: {
   memberId: number,
@@ -15,18 +13,14 @@ const AdminEntity = (props: {
       <BoxWidget title={"Entity : " + props.entity.name}>
         {!!props.entity && <div><DisplayEntityBalance entity={props.entity} /></div>}
       </BoxWidget>
+      { props.memberId > 0 && (<>
       <BoxWidget title='Fund Entity'>
         <FundEntityWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
       <BoxWidget title='Withdraw from Entity'>
         <WithdrawEntityWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
-      <BoxWidget title='Entity member'>
-        <DisplayMemberList entity={props.entity} />
-      </BoxWidget>
-      <BoxWidget title='Add member'>
-        <AddMemberWidget entity={props.entity} />
-      </BoxWidget>
+      </>)}
     </div>
   )
 }

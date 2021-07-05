@@ -1,6 +1,7 @@
 import { TokenType } from '../type/tokenType'
 import { BalanceType } from '../type/balanceType'
 import { OperationType } from '../type/operationType'
+import { SendToApproveType } from '../type/sendToApproveType'
 import { MemberType } from '../type/memberType'
 import { DeviceType } from '../type/deviceType'
 
@@ -44,6 +45,10 @@ class Entity {
   }
 
   async getOperationList(): Promise<OperationType[]> {
+    throw new Error('You must implement this function');
+  }
+
+  async getSendToApproveList(): Promise<SendToApproveType[]> {
     throw new Error('You must implement this function');
   }
 
@@ -121,12 +126,42 @@ class Entity {
     throw new Error('You must implement this function');
   }
 
+  async send(
+    memberId: number,
+    to: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    throw new Error('You must implement this function');
+  }
+
+  async sendToApprove(
+    memberId: number,
+    to: string,
+    amount: string,
+    tokenName: string,
+    name: string,
+    reason: string,
+  ) {
+    throw new Error('You must implement this function');
+  }
+
+  async setAllowance(
+    memberId: number,
+    amount: string,
+    tokenName: string,
+  ) {
+    throw new Error('You must implement this function');
+  }
+
   async pay(
     memberId: number,
     amount: string,
     tokenName: string,
     name: string,
-    subject: string,
+    reason: string,
     address: string,
   ) {
     throw new Error('You must implement this function');
