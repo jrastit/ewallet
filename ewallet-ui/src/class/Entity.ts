@@ -172,6 +172,10 @@ class Entity {
   async update() {
     throw new Error('You must implement this function');
   }
+
+  async getInfoTxt(): Promise<string> {
+    throw new Error('You must implement this function');
+  }
 }
 
 export { Entity }

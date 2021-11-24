@@ -423,6 +423,11 @@ class LocalEntity extends Entity {
     this.save()
   }
 
+  async getInfoTxt(): Promise<string> {
+    let txt = "LocalEntity\n"
+    return txt
+  }
+
 }
 
 

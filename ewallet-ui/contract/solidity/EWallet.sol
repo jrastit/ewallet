@@ -39,13 +39,8 @@ contract EWallet {
     mapping(uint16 => mapping(address => uint16)) private balanceListByMember;
     mapping(uint16 => mapping(address => uint16)) private allowanceListByMember;
 
-    modifier checkEnable {
-        memberContract.checkEnableFunction();
-        _;
-    }
-
     modifier roleManageAllowance {
-        EWalletMember.Member memory member = memberContract.getMemberSelf();
+        EWalletMember.Member memory member = memberContract.getMember(msg.sender);
         require(member.role.manageAllowance);
         _;
     }
@@ -60,7 +55,7 @@ contract EWallet {
         string memory _reason
     ) private {
         SendToApprove memory sendToApprove;
-        sendToApprove.initiator = memberContract.getMemberIdSelf();
+        sendToApprove.initiator = memberContract.getMemberId(msg.sender);
         sendToApprove.to = payable(_to);
         sendToApprove.tokenAddress = _tokenAddress;
         sendToApprove.value = _value;
@@ -76,7 +71,7 @@ contract EWallet {
         string memory _reason
     ) private {
         payable(_to).transfer(_amount);
-        emit Operation(memberContract.getMemberIdSelf(), address(0), _to, address(0), _amount, _name, _reason);
+        emit Operation(memberContract.getMemberId(msg.sender), address(0), _to, address(0), _amount, _name, _reason);
     }
 
     function _sendERC20Token(
@@ -88,7 +83,7 @@ contract EWallet {
     ) private {
         IERC20 token = IERC20(_tokenAddress);
         token.transfer(_to, _amount);
-        emit Operation(memberContract.getMemberIdSelf(), address(0), _to, _tokenAddress, _amount, _name, _reason);
+        emit Operation(memberContract.getMemberId(msg.sender), address(0), _to, _tokenAddress, _amount, _name, _reason);
     }
 
     function depositETH(
@@ -111,7 +106,7 @@ contract EWallet {
       address _tokenAddress,
       uint256 _amount
     ) private {
-      uint16 memberId = memberContract.getMemberIdSelf();
+      uint16 memberId = memberContract.getMemberId(msg.sender);
       uint16 balanceId = balanceListByMember[memberId][_tokenAddress];
       if (balanceId == 0 && (balanceList[memberId].length == 0 || balanceList[memberId][0].token != _tokenAddress)){
         Balance memory balance;
@@ -143,7 +138,7 @@ contract EWallet {
       address _tokenAddress,
       uint256 _amount
     ) private {
-      uint16 memberId = memberContract.getMemberIdSelf();
+      uint16 memberId = memberContract.getMemberId(msg.sender);
       uint16 balanceId = balanceListByMember[memberId][_tokenAddress];
       require(balanceId > 0 || (balanceList[memberId].length > 0 && balanceList[memberId][0].token == _tokenAddress));
       require(balanceList[memberId][balanceId].balance >= _amount);
@@ -159,7 +154,7 @@ contract EWallet {
         string memory _name,
         string memory _reason
     ) public payable {
-        emit Operation(memberContract.getMemberIdSelf(), msg.sender, address(0), address(0), msg.value, _name, _reason);
+        emit Operation(memberContract.getMemberId(msg.sender), msg.sender, address(0), address(0), msg.value, _name, _reason);
     }
 
     function receiveERC20Token(
@@ -171,7 +166,7 @@ contract EWallet {
         IERC20 token = IERC20(_tokenAddress);
         bool transferSucceeded  = token.transferFrom(msg.sender, address(this), _amount);
         require(transferSucceeded, "token transfer error");
-        emit Operation(memberContract.getMemberIdSelf(), msg.sender, address(0), _tokenAddress, _amount, _name, _reason);
+        emit Operation(memberContract.getMemberId(msg.sender), msg.sender, address(0), _tokenAddress, _amount, _name, _reason);
     }
 
     function _withdrawAllowance(
@@ -181,7 +176,7 @@ contract EWallet {
       string memory _name,
       string memory _reason
     ) private {
-      uint16 memberId = memberContract.getMemberIdSelf();
+      uint16 memberId = memberContract.getMemberId(msg.sender);
       uint16 balanceId = allowanceListByMember[memberId][_tokenAddress];
       require(balanceId > 0 || (allowanceList[memberId].length > 0 && allowanceList[memberId][0].token == _tokenAddress));
       require(allowanceList[memberId][balanceId].balance >= _amount);
@@ -235,7 +230,7 @@ contract EWallet {
         uint16 _id
     ) public roleManageAllowance {
         require(sendToApproveList[_id].validator == 0);
-        sendToApproveList[_id].validator = memberContract.getMemberIdSelf();
+        sendToApproveList[_id].validator = memberContract.getMemberId(msg.sender);
         if (sendToApproveList[_id].tokenAddress == address(0)){
             _sendETH(sendToApproveList[_id].to, sendToApproveList[_id].value, sendToApproveList[_id].name, sendToApproveList[_id].reason);
         } else {

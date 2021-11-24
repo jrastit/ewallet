@@ -161,7 +161,13 @@ class ETHEntity extends LocalEntity {
           allowance = await this.contract.getMemberAllowance(memberId);
         }
         if (this.contractMember) {
-          device = await this.contractMember.getDeviceList(memberId);
+          device = (await this.contractMember.getDeviceList(memberId)).map((device: DeviceType) => {
+            return {
+              disable: device.disable,
+              name: device.name,
+              walletAddress: device.walletAddress,
+            }
+          });
         }
         return {
           disable: memberChain.disable,
@@ -242,11 +248,13 @@ class ETHEntity extends LocalEntity {
     amount: string,
     tokenName: string,
   ) {
+    /*
     await super.depositFund(
       memberId,
       amount,
       tokenName
     )
+    */
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
@@ -380,6 +388,19 @@ class ETHEntity extends LocalEntity {
       }
     }
     this.update()
+  }
+
+  async getInfoTxt(): Promise<string> {
+    let txt = "ETHEntity\n"
+    txt += "Contract address:\n"
+    if (this.contract) {
+      txt += this.contract.address + "\n"
+    }
+    txt += "Member contract address:\n"
+    if (this.contractMember) {
+      txt += this.contractMember.address + "\n"
+    }
+    return txt
   }
 }
 

@@ -56,6 +56,14 @@ contract EWalletMember {
       return memberListByAddress[_address];
   }
 
+  function getMemberId(address _address) public checkEnableAddress(_address) view returns(uint16){
+      return memberListByAddress[_address];
+  }
+
+  function getMember(address _address) public checkEnableAddress(_address) view returns(Member memory){
+      return memberList[memberListByAddress[_address]];
+  }
+
   function getMemberIdSelf() public checkEnable view returns(uint16){
       return memberListByAddress[msg.sender];
   }
@@ -64,12 +72,7 @@ contract EWalletMember {
       return memberList[memberListByAddress[msg.sender]];
   }
 
-  function checkEnableFunction() public view{
-    uint16 memberId = memberListByAddress[msg.sender];
-    require(!memberList[memberId].disable);
-    uint16 deviceId = deviceListByAddress[memberId][msg.sender];
-    require(!deviceList[memberId][deviceId].disable);
-  }
+
 
   function getDeviceIdSelf(uint16 _memberId) public view returns(uint16){
       return deviceListByAddress[_memberId][msg.sender];
@@ -133,10 +136,19 @@ contract EWalletMember {
 
   modifier checkEnable {
       uint16 memberId = memberListByAddress[msg.sender];
-      require(!memberList[memberId].disable);
+      require(!memberList[memberId].disable, "member is disable");
       uint16 deviceId = deviceListByAddress[memberId][msg.sender];
-      require(!deviceList[memberId][deviceId].disable);
-      require(deviceList[memberId][deviceId].walletAddress == msg.sender);
+      require(!deviceList[memberId][deviceId].disable, "device is disable");
+      require(deviceList[memberId][deviceId].walletAddress == msg.sender, "device not found");
+      _;
+  }
+
+  modifier checkEnableAddress(address _address) {
+      uint16 memberId = memberListByAddress[_address];
+      require(!memberList[memberId].disable, "member is disable");
+      uint16 deviceId = deviceListByAddress[memberId][_address];
+      require(!deviceList[memberId][deviceId].disable, "device is disable");
+      require(deviceList[memberId][deviceId].walletAddress == _address, "device not found");
       _;
   }
 
@@ -228,7 +240,7 @@ contract EWalletMember {
 
   constructor(string memory _memberName, string memory _deviceName) {
     uint16 memberId = _addMember(_memberName);
-    _addDevice(_deviceName, tx.origin, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor
+    _addDevice(_deviceName, msg.sender, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor, or tx.origin
     _setRole(memberId, true, true, true, true, true, true);
   }
 

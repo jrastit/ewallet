@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
 import { ethers } from 'ethers'
-import logo from './logo.png';
+import logo from './images/logo.png';
 import './App.css';
 import AppNav from './AppNav'
 import { Entity } from './class/Entity'
@@ -50,8 +50,8 @@ function App() {
   const [entity, _setEntity] = useState<Entity | null | undefined>(null)
   const [memberId, setMemberId] = useState(-1)
 
-  const setEntity = (entity : Entity | null | undefined) => {
-    console.log("setEntity")
+  const setEntity = async (entity : Entity | null | undefined) => {
+    console.log("setEntity\n" + (entity ? (await entity.getInfoTxt()) : "null"))
     _setEntity(entity);
   }
 
