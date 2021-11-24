@@ -11,8 +11,7 @@
     {
       "name" : "ganache",
       "url": "http://localhost:8545",
-      "chainId": 1337,
-      "entityRegistryAddress": "0xDd65C920a296f5Feeca6e92F86fCd641FE41D5c6"
+      "chainId": 1337
     },
     {
       "name" : "oasisParatime",

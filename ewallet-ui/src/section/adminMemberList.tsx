@@ -12,7 +12,7 @@ const AdminEntity = (props: {
       <BoxWidget title='Entity member'>
         <DisplayMemberList entity={props.entity} />
       </BoxWidget>
-      { props.memberId > 0 && (<>
+      { props.memberId > -1 && (<>
       <BoxWidget title='Add member'>
         <AddMemberWidget entity={props.entity} />
       </BoxWidget>

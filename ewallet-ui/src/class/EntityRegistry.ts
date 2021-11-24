@@ -1,16 +1,19 @@
 import { ethers } from 'ethers'
 
-import { Entity } from './Entity'
-import { ETHEntity } from './ETHEntity'
+import {
+  createRegistryContract,
+  getRegistryContract,
+  createWalletContract,
+  getWalletContract,
+} from '../contract/contractFactory'
 
-import bytecodePath from '../contract/solidity/bin/contract_solidity_EWalletRegistry_sol_EWalletRegistry.bin'
-import abiPath from '../contract/solidity/bin/contract_solidity_EWalletRegistry_sol_EWalletRegistry.abi'
+import { ETHEntity } from './ETHEntity'
 
 class EntityRegistry {
   contractAddress?: string
   signer: ethers.Signer
   contract?: ethers.Contract
-  entityList: Entity[]
+  entityList: { name: string, address: string }[]
   networkName: string
 
   constructor(
@@ -28,22 +31,11 @@ class EntityRegistry {
 
   async init() {
 
-    const abi = await (await fetch(abiPath)).text()
-
     if (!this.contractAddress) {
-
-      const bytecode = await (await fetch(bytecodePath)).text()
-
-      const factory = new ethers.ContractFactory(abi, bytecode, this.signer)
-
-      this.contract = await factory.deploy()
-
-      await this.contract.deployed()
-
+      this.contract = await createRegistryContract(this.signer)
       this.contractAddress = this.contract.address
-
     } else {
-      this.contract = new ethers.Contract(this.contractAddress, abi, this.signer)
+      this.contract = await getRegistryContract(this.contractAddress, this.signer)
       await this.update()
     }
 
@@ -53,27 +45,30 @@ class EntityRegistry {
 
   async update() {
     if (this.contract) {
-      const entityListSize = await this.contract.entityListSize()
-      if (entityListSize) {
-        console.log("entityListSize", entityListSize.toNumber())
-        const entityListChainPromise = []
-        for (let i = 0; i < entityListSize.toNumber(); i++) {
-          entityListChainPromise.push(this.contract.entityList(i))
-        }
-        this.entityList = await Promise.all((await Promise.all(entityListChainPromise)).map(async entityAddress => {
-          return await (new ETHEntity({
-            contractAddress: entityAddress,
-            networkName: this.networkName,
-            signer: this.signer,
-          })).init()
-        }))
-        /*
-        entityList.forEach(entity => {
-          this.entityList.filter(entity => entity.contractAddress == entity)
-        });
-        */
-      }
+      const entityListChain = await this.contract.getEntityList()
+      console.log("entityList", entityListChain)
+
+      const newEntityList: Array<{ name: string, address: string }> = await Promise.all<{ name: string, address: string }>(
+        entityListChain.map(async (address: string) => {
+          const contract = await getWalletContract(address, this.signer)
+          const name = await contract.name()
+          //console.log("entity : ", address, name)
+          return { name: name, address: address }
+        }));
+      this.entityList = newEntityList
     }
+  }
+
+  async loadEntity(
+    address: string,
+  ) {
+    const entity = new ETHEntity({
+      networkName: this.networkName,
+      signer: this.signer,
+      contractAddress: address,
+    })
+    await entity.init()
+    return entity
   }
 
   async createEntity(
@@ -82,11 +77,13 @@ class EntityRegistry {
     deviceName: string,
   ) {
     if (this.contract) {
-      const tx = await this.contract.createEntity(name, memberName, deviceName)
+      const walletContract = await createWalletContract(name, memberName, deviceName, this.signer)
+      const tx = await this.contract.createEntity(walletContract.address)
       const confirm = await tx.wait()
-      const idx = confirm.events[0].args._index.toNumber()
-      const entityAddress = await this.contract.entityList(idx)
-      return entityAddress
+      console.log("confirm", confirm)
+      //const idx = confirm.events[0].args._index.toNumber()
+      //const entityAddress = await this.contract.entityList(idx)
+      return walletContract.address
     } else {
       throw new Error("Contract not initialized")
     }

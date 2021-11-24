@@ -29,7 +29,7 @@ const FundEntityWidget = (props: {
       props.memberId,
       fieldValue.amount,
       fieldValue.token,
-    ).then(() => setSubmit(2)).catch(error => setError(error.message))
+    ).then(() => setSubmit(2)).catch(error => {console.log(error); setError(error.message);})
     event.preventDefault()
     setSubmit(1)
   }

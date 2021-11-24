@@ -1,6 +1,6 @@
 type DeviceType = {
   name: string,
-  address: string,
+  walletAddress: string,
   disable: boolean,
 }
 

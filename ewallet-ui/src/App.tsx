@@ -47,8 +47,13 @@ function App() {
     error: undefined,
   })
   const [entityRegistry, setEntityRegistry] = useState<EntityRegistry>()
-  const [entity, setEntity] = useState<Entity | null | undefined>(null)
+  const [entity, _setEntity] = useState<Entity | null | undefined>(null)
   const [memberId, setMemberId] = useState(-1)
+
+  const setEntity = (entity : Entity | null | undefined) => {
+    console.log("setEntity")
+    _setEntity(entity);
+  }
 
   if (walletInfo.wallet && entity) {
     entity.getMemberIdFromAddress(walletInfo.address).then(
@@ -57,7 +62,10 @@ function App() {
           setMemberId(_memberId)
         }
       }
-    ).catch((err) => setMemberId(-1))
+    ).catch((err) => {
+      console.log(err);
+      setMemberId(-1);
+    })
   }
 
   const updateAddress = (_networkName : string | undefined, _address: string, _wallet: ethers.Wallet | undefined) => {
@@ -140,7 +148,7 @@ function App() {
               </BoxWidget>
             {entityRegistry &&
               <Fragment>
-              <BoxWidget title='Entity liste'>
+              <BoxWidget title='Entity list'>
               <EntityListWidget
                 setEntity={setEntity}
                 entityRegistry={entityRegistry}
@@ -166,14 +174,14 @@ function App() {
                 <AdminEntity memberId={memberId} entity={entity} />
                 <AdminMemberList memberId={memberId} entity={entity} />
               </Col>
-              { memberId > 0 &&
+              { memberId > -1 &&
               <Col><AdminMember memberId={memberId} entity={entity} /></Col>
               }
               <Col>
                 <BoxWidget title='Pay entity'>
                   <PayEntity memberId={memberId} entity={entity} address={walletInfo.address}/>
                 </BoxWidget>
-                { memberId > 0 &&
+                { memberId > -1 &&
                 <BoxWidget title='Send from entity'>
                   <SendWidget memberId={memberId} entity={entity}/>
                 </BoxWidget>

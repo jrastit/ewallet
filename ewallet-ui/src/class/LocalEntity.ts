@@ -181,7 +181,7 @@ class LocalEntity extends Entity {
 
     this.memberList.map(member => {
       if (member.device.filter(
-        device => device.address === memberWallet
+        device => device.walletAddress === memberWallet
       ).length > 0) {
         throw new Error("Wallet address already registered")
       }
@@ -212,10 +212,10 @@ class LocalEntity extends Entity {
     name: string,
     address: string,
   ) {
-    address = ethers.utils.getAddress(address)
+    const walletAddress = ethers.utils.getAddress(address)
     this.memberList.map(member => {
       if (member.device.filter(
-        device => device.address === address
+        device => device.walletAddress === address
       ).length > 0) {
         throw new Error("Wallet address already registered")
       }
@@ -229,7 +229,7 @@ class LocalEntity extends Entity {
     }
     member.device.push({
       name,
-      address,
+      walletAddress,
       disable: false,
     })
   }
@@ -263,7 +263,7 @@ class LocalEntity extends Entity {
   ) {
     const member = await this.getMemberFromId(memberId)
     member.device.filter(
-      device => device.address === address
+      device => device.walletAddress === address
     ).forEach((device) => {
       device.disable = disable
       this.save()

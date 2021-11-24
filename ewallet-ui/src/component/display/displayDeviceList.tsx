@@ -36,8 +36,8 @@ const DisplayDeviceList = (props: {
 
   const displayDevice = (device: DeviceType) => {
     return (
-      <ListGroup.Item key={device.address} variant={device.disable ? "danger" : "success"}>
-        {device.name}<br />{device.address}
+      <ListGroup.Item key={device.walletAddress} variant={device.disable ? "danger" : "success"}>
+        {device.name}<br />{device.walletAddress}
       </ListGroup.Item>
     )
   }

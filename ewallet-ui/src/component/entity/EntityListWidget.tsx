@@ -17,16 +17,16 @@ const EntityListWidget = (props: {
     return () => clearTimeout(timer);
   });
 
-  const displayEntity = (entity: Entity) => {
+  const displayEntity = (entity: {name:string, address:string}) => {
     console.log("entity ", entity)
     return (
-      <ListGroup.Item key={entity.name} onClick={() => props.setEntity(entity)}>
+      <ListGroup.Item key={entity.address} onClick={async () => props.setEntity(await props.entityRegistry.loadEntity(entity.address))}>
         {entity.name}
       </ListGroup.Item>
     )
   }
 
-  const displayEntityList = (_entityList: Array<Entity>) => {
+  const displayEntityList = (_entityList: Array<{name:string, address:string}>) => {
     return (
       <ListGroup>
         {_entityList.map((entity) => { return displayEntity(entity) })}

@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
+pragma abicoder v2;
 
 import { EWallet } from "./EWallet.sol";
 
-
 contract EWalletRegistry {
 
-  EWallet[] public entityList;
-  uint256 public entityListSize;
+  EWallet[] private entityList;
 
-  event EntityCreated(uint256 _index);
+  function createEntity(EWallet _ewallet) public returns (EWallet){
+    entityList.push(_ewallet);
+    return _ewallet;
+  }
 
-  function createEntity(string memory _name, string memory _memberName, string memory _deviceName) public{
-    entityList.push(new EWallet(_name, _memberName, _deviceName));
-    emit EntityCreated(entityListSize);
-    entityListSize++;
+  function getEntityList() public view returns (EWallet[] memory){
+      return entityList;
   }
 }

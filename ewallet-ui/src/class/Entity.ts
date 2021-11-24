@@ -60,19 +60,21 @@ class Entity {
     address: string,
   ) {
     const memberList = await this.getMemberList()
-
     for (let i = 0; i < memberList.length; i++) {
       for (let j = 0; j < memberList[i].device.length; j++) {
-        if (memberList[i].device[j].address === address) {
+        if (memberList[i].device[j].walletAddress === address) {
           if (memberList[i].device[j].disable) {
             throw new Error("This device wallet key is disable")
+          }
+          if (memberList[i].disable) {
+            throw new Error("This member is disable")
           }
           const memberId: number = memberList[i].memberId
           return memberId
         }
       }
     }
-    throw new Error("Address not found")
+    throw new Error("Address not found in entity")
   }
 
   async getMemberFromId(

@@ -13,7 +13,7 @@ const AdminEntity = (props: {
       <BoxWidget title={"Entity : " + props.entity.name}>
         {!!props.entity && <div><DisplayEntityBalance entity={props.entity} /></div>}
       </BoxWidget>
-      { props.memberId > 0 && (<>
+      { props.memberId > -1 && (<>
       <BoxWidget title='Fund Entity'>
         <FundEntityWidget entity={props.entity} memberId={props.memberId} />
       </BoxWidget>
