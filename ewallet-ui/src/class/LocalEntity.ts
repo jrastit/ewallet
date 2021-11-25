@@ -22,7 +22,7 @@ class LocalEntity extends Entity {
 
   sendToApproveList: Array<SendToApproveType>
 
-  memberId: number
+  memberIdLast: number
 
   sendToApproveId: number
 
@@ -44,7 +44,7 @@ class LocalEntity extends Entity {
       balance?: any,
       blockNumber?: string,
       operationList?: any,
-      memberId?: number,
+      memberIdLast?: number,
       sendToApproveId?: number,
       memberList?: any,
       tokenList?: Array<TokenType>,
@@ -57,7 +57,7 @@ class LocalEntity extends Entity {
     this.operationList = []
     this.balance = []
     this.blockNumber = ethers.BigNumber.from(0)
-    this.memberId = 0
+    this.memberIdLast = 0
     this.sendToApproveId = 0
     this.memberList = []
     this.sendToApproveList = []
@@ -67,6 +67,7 @@ class LocalEntity extends Entity {
       symbol: 'ETH',
       decimal: 18,
       networkName: props.networkName,
+      contractAddress: "0x0000000000000000000000000000000000000000",
     }, {
       name: 'dai',
       niceName: 'dai',
@@ -97,14 +98,14 @@ class LocalEntity extends Entity {
       props.balance &&
       props.blockNumber &&
       props.operationList &&
-      props.memberId &&
+      props.memberIdLast &&
       props.memberList &&
       props.tokenList
     ) {
       this.balance = props.balance.map(balanceFromString)
       this.blockNumber = ethers.BigNumber.from(props.blockNumber)
       this.operationList = props.operationList.map(operationFromString)
-      this.memberId = props.memberId
+      this.memberIdLast = props.memberIdLast
       this.memberList = props.memberList.map(memberFromString)
       this.tokenList = props.tokenList
     }
@@ -118,7 +119,7 @@ class LocalEntity extends Entity {
       blockNumber: this.blockNumber.toString(),
       balance: this.balance.map(balanceToString),
       operationList: this.operationList.map(operationToString),
-      memberId: this.memberId,
+      memberIdLast: this.memberIdLast,
       memberList: this.memberList.map(memberToString),
     }
   }
@@ -188,10 +189,10 @@ class LocalEntity extends Entity {
       return member
     })
 
-    this.memberId = this.memberId + 1
+    this.memberIdLast = this.memberIdLast + 1
 
     this.memberList.push({
-      memberId: this.memberId,
+      memberId: this.memberIdLast,
       memberName,
       balance: [],
       allowance: [],
@@ -200,7 +201,7 @@ class LocalEntity extends Entity {
     })
     this.save()
     try {
-      await this._addDeviceForMemberId(this.memberId, deviceName, memberWallet)
+      await this._addDeviceForMemberId(this.memberIdLast, deviceName, memberWallet)
       this.save()
     } catch (err) {
       throw err
@@ -234,7 +235,7 @@ class LocalEntity extends Entity {
     })
   }
 
-  async addDeviceForMemberId(
+  async addSelfDevice(
     memberId: number,
     name: string,
     address: string,

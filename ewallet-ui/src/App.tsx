@@ -55,6 +55,10 @@ function App() {
     _setEntity(entity);
   }
 
+  const refreshEntity = async () => {
+    entity && entity.update()
+  }
+
   if (walletInfo.wallet && entity) {
     entity.getMemberIdFromAddress(walletInfo.address).then(
       (_memberId) => {
@@ -171,7 +175,7 @@ function App() {
           {!!entity &&
             <Row>
               <Col>
-                <AdminEntity memberId={memberId} entity={entity} />
+                <AdminEntity memberId={memberId} entity={entity} refreshEntity={refreshEntity}/>
                 <AdminMemberList memberId={memberId} entity={entity} />
               </Col>
               { memberId > -1 &&

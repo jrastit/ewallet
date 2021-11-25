@@ -61,28 +61,17 @@ class ETHEntity extends LocalEntity {
   }
 
   async init() {
-
     if (this.entityRegistry && this.name && this.memberName && this.deviceName) {
-
       this.contractAddress = await this.entityRegistry.createEntity(this.name, this.memberName, this.deviceName)
-      console.log("contractAddress" + this.contractAddress)
-
     }
     if (!this.contractAddress && !this.entityRegistry && this.name && this.memberName && this.deviceName) {
-
       this.contract = await createWalletContract(this.name, this.memberName, this.deviceName, this.signer)
-
-      console.log("contractAddress" + this.contract.address)
-
       this.contractAddress = this.contract.address
       this.contractMember = await getMemberContract(this.contract, this.signer);
       this.save()
     } else if (this.contractAddress) {
       this.contract = await getWalletContract(this.contractAddress, this.signer)
       this.contractMember = await getMemberContract(this.contract, this.signer);
-      if (this.contractMember) {
-        console.log("contractMember", this.contractMember.address)
-      }
       await this.update()
     } else {
       throw new Error("Entity init fail")
@@ -130,15 +119,22 @@ class ETHEntity extends LocalEntity {
 
   }
 
+  async contractBalanceToBalance(balanceChainList: { token: string, balance: ethers.BigNumber }[]) {
+    return await Promise.all(balanceChainList.map(
+      async (balanceChain) => {
+        return {
+          token: (await this.getTokenFromAddress(balanceChain.token)).name,
+          balance: balanceChain.balance,
+        }
+      }
+    ))
+  }
+
   async update() {
     if (this.contract && this.contractMember) {
       this.name = await this.contract.name()
       this.balance = await this.updateBalance();
-
       const memberListChain = await this.contractMember.getMemberList()
-
-      console.log(memberListChain)
-
       this.memberList = await Promise.all<MemberType[]>(memberListChain.map(async (memberChain: {
         name: string,
         role: {
@@ -156,9 +152,8 @@ class ETHEntity extends LocalEntity {
         let allowance: BalanceType[] = []
         let device: DeviceType[] = []
         if (this.contract) {
-          balance = await this.contract.getMemberBalance(memberId);
-          console.log("balance", balance)
-          allowance = await this.contract.getMemberAllowance(memberId);
+          balance = await this.contractBalanceToBalance(await this.contract.getMemberBalance(memberId))
+          allowance = await this.contractBalanceToBalance(await this.contract.getMemberAllowance(memberId))
         }
         if (this.contractMember) {
           device = (await this.contractMember.getDeviceList(memberId)).map((device: DeviceType) => {
@@ -167,7 +162,7 @@ class ETHEntity extends LocalEntity {
               name: device.name,
               walletAddress: device.walletAddress,
             }
-          });
+          })
         }
         return {
           disable: memberChain.disable,
@@ -204,10 +199,7 @@ class ETHEntity extends LocalEntity {
           device,
         }
       }))
-
     }
-    console.log("loaded memberList ", this.memberList)
-
   }
 
   async addMember(
@@ -233,7 +225,7 @@ class ETHEntity extends LocalEntity {
     name: string,
     address: string,
   ) {
-    await super.addDeviceForMemberId(
+    await super.addSelfDevice(
       memberId,
       name,
       address,
@@ -248,13 +240,11 @@ class ETHEntity extends LocalEntity {
     amount: string,
     tokenName: string,
   ) {
-    /*
     await super.depositFund(
       memberId,
       amount,
       tokenName
     )
-    */
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
@@ -263,7 +253,7 @@ class ETHEntity extends LocalEntity {
         await tx.wait()
       }
     }
-    this.update()
+    await this.update()
   }
 
   async withdrawFund(
@@ -285,7 +275,7 @@ class ETHEntity extends LocalEntity {
         await tx.wait()
       }
     }
-    this.update()
+    await this.update()
   }
 
   async setAllowance(
@@ -298,6 +288,7 @@ class ETHEntity extends LocalEntity {
       amount,
       tokenName
     )
+    console.log(memberId)
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
@@ -306,7 +297,7 @@ class ETHEntity extends LocalEntity {
         await tx.wait()
       }
     }
-    this.update()
+    await this.update()
   }
 
   async send(

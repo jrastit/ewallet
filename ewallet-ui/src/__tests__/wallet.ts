@@ -61,6 +61,8 @@ const testWallet = () => {
 
   let entity: ETHEntity
 
+  let memberId: number
+
   const provider = new ethers.providers.JsonRpcProvider()
 
 
@@ -86,6 +88,7 @@ const testWallet = () => {
         entityRegistry: entityRegistry,
       })
       await entity.init()
+      memberId = await entity.getMemberIdFromAddress(await walletList[0].getAddress())
       done()
     })
     func_async()
@@ -98,6 +101,7 @@ const testWallet = () => {
     })
     it('Entity contract', async () => {
       expect(entity.contractAddress).toBeTruthy()
+      expect(memberId).toEqual(0)
     })
     it('Entity add member', async () => {
       expect(entity.contractAddress).toBeTruthy()
@@ -106,9 +110,18 @@ const testWallet = () => {
     })
     it('Entity found', async () => {
       expect(entity.contractAddress).toBeTruthy()
-      await entity.depositFund(entity.memberId, "0.01", "eth")
+      await entity.depositFund(memberId, "0.01", "eth")
+      await entity.update()
+      await entity.withdrawFund(memberId, "0.01", "eth")
     })
 
+    it('Entity allowance', async () => {
+      expect(entity.contractAddress).toBeTruthy()
+      await entity.setAllowance(memberId, "0.01", "eth")
+      await entity.setAllowance(memberId, "0", "eth")
+      await entity.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0.01", "eth")
+      await entity.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0", "eth")
+    })
   })
 
 

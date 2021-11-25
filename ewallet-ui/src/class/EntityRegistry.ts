@@ -79,8 +79,7 @@ class EntityRegistry {
     if (this.contract) {
       const walletContract = await createWalletContract(name, memberName, deviceName, this.signer)
       const tx = await this.contract.createEntity(walletContract.address)
-      const confirm = await tx.wait()
-      console.log("confirm", confirm)
+      await tx.wait()
       //const idx = confirm.events[0].args._index.toNumber()
       //const entityAddress = await this.contract.entityList(idx)
       return walletContract.address

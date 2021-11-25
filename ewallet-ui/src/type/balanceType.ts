@@ -28,7 +28,6 @@ const balanceListFromJson = (balance: any) => {
 }
 
 const balanceAdd = (balance: Array<BalanceType>, balance2: Array<BalanceType>) => {
-  console.log("balance ", balance, balance2);
   for (let i = 0; i < balance2.length; i++) {
     let found = false
     balance.filter(item => item.token === balance2[i].token).map(item => {

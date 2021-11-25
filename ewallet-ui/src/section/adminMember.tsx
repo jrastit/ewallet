@@ -4,6 +4,7 @@ import DisplayDeviceList from '../component/display/displayDeviceList'
 import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
 import SetAllowanceWidget from '../component/admin/setAllowanceWidget'
+import MemberSelectWidget from '../component/util/memberSelectWidget'
 import { Entity } from '../class/Entity'
 import { MemberType } from '../type/memberType'
 import { memberToJson, memberFromJson } from '../type/memberType'
@@ -12,8 +13,28 @@ const AdminMember = (props: {
   memberId: number,
   entity: Entity,
 }) => {
+  const [memberId, setMemberId] = useState<{
+    current: number,
+    props : number
+  }>({
+    current: props.memberId,
+    props: props.memberId
+  })
   const [member, setMember] = useState<MemberType | undefined>()
   const [error, setError] = useState<string | undefined>()
+
+  const updateMemberEvent = (event : {target : {name : string, value : string}}) => {
+    const _memberId = parseInt(event.target.value)
+    if (memberId.current !== _memberId){
+
+      setMemberId({
+        current : _memberId,
+        props : memberId.props,
+      })
+      updateMember(_memberId, props.entity)
+    }
+
+  }
 
   const updateMember = (memberId: number, entity: Entity) => {
     entity.getMemberFromId(memberId).then((_member) => {
@@ -31,7 +52,15 @@ const AdminMember = (props: {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      updateMember(props.memberId, props.entity);
+      if (memberId.props !== props.memberId){
+          setMemberId({
+            current: props.memberId,
+            props: props.memberId
+          })
+          updateMember(props.memberId, props.entity)
+      } else {
+        updateMember(memberId.current, props.entity)
+      }
     }, 2000);
     // Clear timeout if the component is unmounted
     return () => clearTimeout(timer);
@@ -44,6 +73,14 @@ const AdminMember = (props: {
       }
       {member &&
         <div>
+          <BoxWidget>
+            <MemberSelectWidget
+              name = "select member"
+              value = {memberId.current.toString()}
+              entity = {props.entity}
+              onChange = {updateMemberEvent}
+            />
+          </BoxWidget>
           <BoxWidget title={"Member : " + member.memberName}>
             Personal account :
             <DisplayBalanceWidget balance={member.balance} entity={props.entity} />
@@ -62,17 +99,21 @@ const AdminMember = (props: {
           <BoxWidget title={"Set allowance"}>
           <SetAllowanceWidget
             entity={props.entity}
-            memberId={props.memberId}
+            memberId={memberId.current}
           />
           </BoxWidget>
         </div>
       }
-      <BoxWidget title='Add device'>
-        <AddDeviceWidget entity={props.entity} memberId={props.memberId} />
-      </BoxWidget>
-      <BoxWidget title='Device list'>
-        <DisplayDeviceList entity={props.entity} memberId={props.memberId} />
-      </BoxWidget>
+      { member &&
+      <>
+        <BoxWidget title='Add device'>
+          <AddDeviceWidget entity={props.entity} memberId={memberId.current} />
+        </BoxWidget>
+        <BoxWidget title='Device list'>
+          <DisplayDeviceList entity={props.entity} memberId={memberId.current} />
+        </BoxWidget>
+      </>
+      }
 
     </div>
   )

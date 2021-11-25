@@ -25,7 +25,7 @@ const AddDeviceWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.addDeviceForMemberId(
+    props.entity.addSelfDevice(
       props.memberId,
       fieldValue.name,
       fieldValue.wallet,
@@ -62,7 +62,11 @@ const AddDeviceWidget = (props: {
   else if (submit === 1) return (
     <label>Device creation...</label>
   )
-  else return (<label>Device created</label>)
+  else return (<div>
+      <label>Device created</label>&nbsp;&nbsp;
+      <Button variant="primary" onClick={() => { setFieldValue(0); setSubmit(0) }}>Ok</Button>
+    </div>
+  )
 }
 
 export default AddDeviceWidget

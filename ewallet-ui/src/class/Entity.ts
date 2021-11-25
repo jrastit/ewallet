@@ -40,6 +40,16 @@ class Entity {
     throw new Error("Token not found '" + tokenName + "'")
   }
 
+  async getTokenFromAddress(
+    contractAddress: string
+  ): Promise<TokenType> {
+    const token = (await this.getTokenList()).filter(token => token.contractAddress === contractAddress)
+    if (token.length === 1) {
+      return token[0]
+    }
+    throw new Error("Token not found '" + contractAddress + "'")
+  }
+
   async getTokenList(): Promise<TokenType[]> {
     throw new Error('You must implement this function');
   }
@@ -104,7 +114,7 @@ class Entity {
     throw new Error('You must implement this function');
   }
 
-  async addDeviceForMemberId(
+  async addSelfDevice(
     memberId: number,
     name: string,
     address: string,

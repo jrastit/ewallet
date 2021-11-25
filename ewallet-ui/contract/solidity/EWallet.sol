@@ -251,7 +251,7 @@ contract EWallet {
         uint16 _memberId
     ) public roleManageAllowance {
       uint16 balanceId = allowanceListByMember[_memberId][_tokenAddress];
-      if (balanceId == 0 && (balanceList[_memberId].length == 0 || balanceList[_memberId][0].token != _tokenAddress)){
+      if (balanceId == 0 && (allowanceList[_memberId].length == 0 || allowanceList[_memberId][0].token != _tokenAddress)){
         Balance memory balance;
         balance.token = _tokenAddress;
         balance.balance = _amount;
