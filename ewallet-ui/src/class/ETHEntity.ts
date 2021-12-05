@@ -5,6 +5,7 @@ import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
 import { DeviceType } from '../type/deviceType'
 import { BalanceType } from '../type/balanceType'
+import { OperationType } from '../type/operationType'
 
 import { ethers } from 'ethers'
 
@@ -135,6 +136,27 @@ class ETHEntity extends LocalEntity {
       this.name = await this.contract.name()
       this.balance = await this.updateBalance();
       const memberListChain = await this.contractMember.getMemberList()
+      /*
+      this.operationList = await Promise.all((await this.contract.queryFilter(this.contract.filters.Operation())).map(async (operationChain: ethers.Event): Promise<OperationType> => {
+        if (!operationChain.args) throw new Error("invalid argument in event")
+        let name = operationChain.args._name
+        if (operationChain.args._memberId) {
+          name = (await this.getMemberFromId(operationChain.args._memberId)).memberName
+        }
+        return {
+          blockNumber: ethers.BigNumber.from(operationChain.blockNumber),
+          memberId: operationChain.args._memberId,
+          message: name + " : " + operationChain.args._reason,
+          category: "operation",
+          date: new Date((await operationChain.getBlock()).timestamp),
+          balance: [{
+            balance: operationChain.args._value,
+            token: (await this.getTokenFromAddress(operationChain.args._tokenAddress)).name
+          }]
+        }
+
+      }))
+      */
       this.memberList = await Promise.all<MemberType[]>(memberListChain.map(async (memberChain: {
         name: string,
         role: {
@@ -288,7 +310,6 @@ class ETHEntity extends LocalEntity {
       amount,
       tokenName
     )
-    console.log(memberId)
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {

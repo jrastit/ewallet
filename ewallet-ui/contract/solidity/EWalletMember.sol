@@ -3,9 +3,6 @@
 pragma solidity ^0.7.0;
 pragma abicoder v2;
 
-import { IERC20 } from "./IERC20.sol";
-
-
 /**
  * @title EWalletMember
  * @dev Non custodial entity wallet mpember management
@@ -71,8 +68,6 @@ contract EWalletMember {
   function getMemberSelf() public checkEnable view returns(Member memory){
       return memberList[memberListByAddress[msg.sender]];
   }
-
-
 
   function getDeviceIdSelf(uint16 _memberId) public view returns(uint16){
       return deviceListByAddress[_memberId][msg.sender];

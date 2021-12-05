@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@chainlink/contracts": "^0.2.2",
+    "@openzeppelin/contracts": "^3.4.2-solc-0.7",
     "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
@@ -20,13 +22,14 @@
   },
   "scripts": {
     "pm2": "pm2 --name ewallet serve build 5000 -spa",
-    "compile": "npx solc -o src/contract/solidity/bin --optimize --optimize-runs=1 --bin --abi contract/solidity/*.sol",
+    "compile": "npx solc --include-path ./node_modules/ --base-path ./node_modules/ -o src/contract/solidity/bin --optimize --optimize-runs=1 --bin --abi contract/solidity/*.sol",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "ganache": "npx ganache-cli -a 10 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8000000 --port 8545 -i 1234 --networkId 1234"
   },
+  "proxy": "http://localhost:3001",
   "eslintConfig": {
     "extends": [
       "react-app",
