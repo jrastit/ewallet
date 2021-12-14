@@ -16,7 +16,7 @@ jest.mock('../contract/contractResource', () => {
   };
 });
 
-jest.setTimeout(50000)
+jest.setTimeout(500000)
 
 import { network as networkList } from '../config/network.json'
 
@@ -25,7 +25,8 @@ const networkName = "rinkeby2"
 let walletList: ethers.Signer[]
 
 import {
-  createDomainContract
+  createDomainContract,
+  getERC20Contract
 } from '../contract/contractFactory'
 
 const testDomain = () => {
@@ -44,6 +45,7 @@ const testDomain = () => {
     }
   }
   let domainContract: ethers.Contract
+  let linkContract: ethers.Contract
   let privateKeys = require("../../key/" + networkName + "PrivateKeys.json")
   let provider: ethers.providers.JsonRpcProvider
 
@@ -55,7 +57,7 @@ const testDomain = () => {
       walletList = privateKeys.map((pk: string): ethers.Signer => {
         return new ethers.Wallet(pk, provider)
       })
-
+      console.log("Wallet address", await walletList[0].getAddress())
       done()
     })
     func_async()
@@ -66,7 +68,10 @@ const testDomain = () => {
     it("domain contract", async () => {
       expect(network.contractDomain).not.toBeUndefined()
       if (network.contractDomain) {
-
+        linkContract = await getERC20Contract(
+          network.contractDomain.linkAddress,
+          walletList[0]
+        )
         domainContract = await createDomainContract(
           walletList[0],
           network.contractDomain.linkAddress,
@@ -74,15 +79,31 @@ const testDomain = () => {
           network.contractDomain.jobId,
         )
         expect(domainContract.address).not.toBeUndefined()
-        //console.log("domainContract", domainContract ?.address)
-        //expect(domainContract.address).toBeTruthy()
+        console.log("Domain Contract", domainContract.address)
+        expect(linkContract.address).not.toBeUndefined()
+        let balanceLink = await linkContract.balanceOf(domainContract.address)
+        const walletBalanceLink = await linkContract.balanceOf(await walletList[0].getAddress())
+        const fee = ethers.utils.parseUnits('0.01', 18)
+        console.log("domain contract balance link", ethers.utils.formatUnits(balanceLink, 18))
+        console.log("wallet balance link", ethers.utils.formatUnits(walletBalanceLink, 18))
+        if (balanceLink.lt(fee)) {
+          expect(walletBalanceLink.gte(fee.sub(balanceLink))).toBeTruthy()
+          const tx = await linkContract.transfer(domainContract.address, fee.sub(balanceLink))
+          const result = await tx.wait()
+          //console.log(result)
+          balanceLink = await linkContract.balanceOf(domainContract.address)
+          console.log("domain contract balance link", ethers.utils.formatUnits(balanceLink, 18))
+          console.log("wallet balance link", ethers.utils.formatUnits(walletBalanceLink, 18))
+        }
+
         const domainList = await domainContract.getDomainList()
         console.log("domainList", domainList)
+
         const tx = await domainContract.requestDomainContract("katfy.com")
         const result = await tx.wait()
-        console.log(result)
-        const katfyaddress = await domainContract.getDomainAddress("katfy.com")
-        console.log("katfyaddress", katfyaddress)
+        //console.log(result)
+        //const katfyaddress = await domainContract.getDomainAddress("katfy.com")
+        //console.log("katfyaddress", katfyaddress)
 
 
       }
