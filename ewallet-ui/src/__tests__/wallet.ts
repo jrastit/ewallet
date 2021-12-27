@@ -1,4 +1,5 @@
 import * as ethers from 'ethers'
+import { networkName, getWalletList } from './testConfig'
 
 jest.mock('../contract/contractResource', () => {
   return {
@@ -41,17 +42,9 @@ Object.defineProperty(window, 'localStorage', {
 
 import { ETHEntity } from '../class/ETHEntity'
 import { EntityRegistry } from '../class/EntityRegistry'
-import { network as networkList } from '../config/network.json'
 
-const networkName = "rinkeby2"
 
 const testWallet = () => {
-
-  const network = networkList.filter((network) => network.name === networkName)[0]
-
-  let privateKeys = require("../../key/" + networkName + "PrivateKeys.json")
-  const url = network.url
-  const provider = new ethers.providers.JsonRpcProvider(url)
 
   let walletList: ethers.Signer[]
   let entityRegistry: EntityRegistry
@@ -66,9 +59,7 @@ const testWallet = () => {
       try {
         //console.log("balance", await provider.getBalance("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"))
 
-        walletList = privateKeys.map((pk: string): ethers.Signer => {
-          return new ethers.Wallet(pk, provider)
-        })
+        walletList = getWalletList()
         entityRegistry = new EntityRegistry({
           signer: walletList[0],
           networkName,

@@ -24,6 +24,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-contract/solidity/bin/
-src/contract/bin
-src/contract
+/src/contract/solidity/bin/
+/src/contract/solidity/compiled
+/compiled

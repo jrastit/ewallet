@@ -1,4 +1,7 @@
 import * as ethers from 'ethers'
+import axios from 'axios'
+import { network, getWalletList } from './testConfig'
+
 
 jest.mock('../contract/contractResource', () => {
   return {
@@ -18,19 +21,40 @@ jest.mock('../contract/contractResource', () => {
 
 jest.setTimeout(500000)
 
-import { network as networkList } from '../config/network.json'
-
-const networkName = "rinkeby2"
-
 let walletList: ethers.Signer[]
 
 import {
   createDomainContract,
-  getERC20Contract
+  createDomainChainlinkContract,
+  getIERC677Contract
 } from '../contract/contractFactory'
 
-const testDomain = () => {
+const requestAndFullfilDomain = async (domainName: string, domainContract: ethers.Contract) => {
+  const tx = await domainContract.requestDomainContract(domainName)
+  const result = await tx.wait()
+  if (!network.contractDomainChainlink) {
+    const requestId = result.events[0].args.requestId
+    const domainName = result.events[0].args.domainName
+    await fullfilDomain(domainName, requestId, domainContract)
+  }
+}
 
+const fullfilDomain = async (domainName: string, requestId: string, domainContract: ethers.Contract) => {
+  const response = await axios.post(
+    "https://nft4.domains/api/dns/owner",
+    { domain: domainName }
+  )
+  const data = response.data;
+  let domainOwner = data.domain.txt.nft4domains.owner
+  if (!domainOwner) {
+    domainOwner = ethers.constants.AddressZero
+  }
+  const tx = await domainContract.fulfill(requestId, domainOwner)
+  await tx.wait()
+}
+
+const testDomain = () => {
+  /*
   let network: {
     name: string
     url: string
@@ -44,21 +68,21 @@ const testDomain = () => {
       jobId: string,
     }
   }
+  */
   let domainContract: ethers.Contract
   let linkContract: ethers.Contract
-  let privateKeys = require("../../key/" + networkName + "PrivateKeys.json")
-  let provider: ethers.providers.JsonRpcProvider
 
   beforeAll(done => {
     const func_async = (async () => {
-      network = networkList.filter((network) => network.name === networkName)[0]
-      const url = network.url
-      provider = new ethers.providers.JsonRpcProvider(url)
-      walletList = privateKeys.map((pk: string): ethers.Signer => {
-        return new ethers.Wallet(pk, provider)
-      })
-      console.log("Wallet address", await walletList[0].getAddress())
-      done()
+      try {
+        walletList = getWalletList()
+        //console.log("Wallet address", await walletList[0].getAddress())
+        done()
+      } catch (error) {
+        console.log(error)
+        done(error)
+      }
+
     })
     func_async()
   })
@@ -66,20 +90,28 @@ const testDomain = () => {
   describe('Domain contract', () => {
 
     it("domain contract", async () => {
-      expect(network.contractDomain).not.toBeUndefined()
-      if (network.contractDomain) {
-        linkContract = await getERC20Contract(
-          network.contractDomain.linkAddress,
+      if (network.contractDomainChainlink) {
+        linkContract = await getIERC677Contract(
+          network.contractDomainChainlink.linkAddress,
           walletList[0]
         )
+        domainContract = await createDomainChainlinkContract(
+          walletList[0],
+          await linkContract.getAddress(),
+          network.contractDomainChainlink.oracle,
+          network.contractDomainChainlink.jobId,
+        )
+      } else {
         domainContract = await createDomainContract(
           walletList[0],
-          network.contractDomain.linkAddress,
-          network.contractDomain.oracle,
-          network.contractDomain.jobId,
+          await walletList[0].getAddress(),
         )
-        expect(domainContract.address).not.toBeUndefined()
-        console.log("Domain Contract", domainContract.address)
+
+      }
+      expect(domainContract.address).not.toBeUndefined()
+      //console.log("Domain Contract", domainContract.address)
+
+      if (network.contractDomainChainlink) {
         expect(linkContract.address).not.toBeUndefined()
         let balanceLink = await linkContract.balanceOf(domainContract.address)
         const walletBalanceLink = await linkContract.balanceOf(await walletList[0].getAddress())
@@ -89,24 +121,32 @@ const testDomain = () => {
         if (balanceLink.lt(fee)) {
           expect(walletBalanceLink.gte(fee.sub(balanceLink))).toBeTruthy()
           const tx = await linkContract.transfer(domainContract.address, fee.sub(balanceLink))
-          const result = await tx.wait()
-          //console.log(result)
+          await tx.wait()
           balanceLink = await linkContract.balanceOf(domainContract.address)
           console.log("domain contract balance link", ethers.utils.formatUnits(balanceLink, 18))
           console.log("wallet balance link", ethers.utils.formatUnits(walletBalanceLink, 18))
         }
-
-        const domainList = await domainContract.getDomainList()
-        console.log("domainList", domainList)
-
-        const tx = await domainContract.requestDomainContract("katfy.com")
-        const result = await tx.wait()
-        //console.log(result)
-        //const katfyaddress = await domainContract.getDomainAddress("katfy.com")
-        //console.log("katfyaddress", katfyaddress)
-
-
       }
+
+      const domainList = await domainContract.getDomainList()
+      expect(domainList[1]).toBeUndefined()
+
+      await requestAndFullfilDomain("katfy.com", domainContract);
+      await requestAndFullfilDomain("test.com", domainContract);
+
+      const katfyaddress = await domainContract.getDomainOwner("katfy.com")
+      expect(katfyaddress).toEqual("0x703358A13db810B49Ce6DF2ccdc3e9DfF3845b86")
+
+      const testaddress = await domainContract.getDomainOwner("test.com")
+      expect(testaddress).toEqual("0x0000000000000000000000000000000000000000")
+
+      const domainList2 = await domainContract.getDomainList()
+      expect(domainList2[1].ownerAddress).toEqual("0x703358A13db810B49Ce6DF2ccdc3e9DfF3845b86")
+      expect(domainList2[1].domainName).toEqual("katfy.com")
+      expect(domainList2[2].ownerAddress).toEqual("0x0000000000000000000000000000000000000000")
+      expect(domainList2[2].domainName).toEqual("test.com")
+
+
     })
 
   })

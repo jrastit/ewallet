@@ -6,7 +6,7 @@
       "chainId": 80001,
       "blockExplorerTxPrefix": "https://polygonscan.com",
       "faucet": "https://faucet.polygon.technology/",
-      "contractDomain":{
+      "contractDomainChainlink":{
         "linkAddress":"0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
         "oracle":"0x0bDDCD124709aCBf9BB3F824EbC61C87019888bb",
         "jobId":"2bb15c3f9cfc4336b95012872ff05092"
@@ -19,7 +19,7 @@
       "blockExplorerTxPrefix": "https://kovan.etherscan.io/tx/",
       "faucet": "https://faucets.chain.link/kovan",
       "entityRegistryAddress": "0x7fD3c809B37D617f217aF08C5862C2817f33730A",
-      "contractDomain":{
+      "contractDomainChainlink":{
         "linkAddress":"0xa36085F69e2889c224210F603D836748e7dC0088",
         "oracle":"0x9C0383DE842A3A0f403b0021F6F85756524d5599",
         "jobId":"7fb536be865b4336b27fc10147c193c7"
@@ -30,7 +30,7 @@
       "url": "https://rinkeby.infura.io/v3/5d37c494621a43558d77c90e368d4022",
       "chainId": 4,
       "faucet": "https://faucets.chain.link/rinkeby",
-      "contractDomain":{
+      "contractDomainChainlink":{
         "linkAddress":"0x01BE23585060835E02B77ef475b0Cc51aA1e0709",
         "oracle":"0x5932DbD6255D1837bFb5E9AbB2bea59Eb0474525",
         "jobId":"b1d42cd5-4a3a-4200-b1f7-25a68e48aad8"
@@ -39,12 +39,7 @@
     {
       "name" : "ganache",
       "url": "http://localhost:8545",
-      "chainId": 1337,
-      "contractDomain":{
-        "linkAddress":"0xa36085F69e2889c224210F603D836748e7dC0088",
-        "oracle":"0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8",
-        "jobId":"0xd5270d1c311941d0b08bead21fea7747"
-      }
+      "chainId": 1337
     },
     {
       "name" : "oasisParatime",

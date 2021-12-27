@@ -3,7 +3,6 @@ import { ethers } from 'ethers'
 import {
   createRegistryContract,
   getRegistryContract,
-  createWalletContract,
   getWalletContract,
 } from '../contract/contractFactory'
 
@@ -30,7 +29,6 @@ class EntityRegistry {
   }
 
   async init() {
-
     if (!this.contractAddress) {
       this.contract = await createRegistryContract(this.signer)
       this.contractAddress = this.contract.address
@@ -38,7 +36,6 @@ class EntityRegistry {
       this.contract = await getRegistryContract(this.contractAddress, this.signer)
       await this.update()
     }
-
     this.save()
     return this
   }
@@ -77,12 +74,10 @@ class EntityRegistry {
     deviceName: string,
   ) {
     if (this.contract) {
-      const walletContract = await createWalletContract(name, memberName, deviceName, this.signer)
-      const tx = await this.contract.createEntity(walletContract.address)
-      await tx.wait()
-      //const idx = confirm.events[0].args._index.toNumber()
-      //const entityAddress = await this.contract.entityList(idx)
-      return walletContract.address
+      const tx = await this.contract.createEntitySelf(name, memberName, deviceName)
+      const confirm = await tx.wait()
+      const entityAddress = confirm.events[0].args.wallet
+      return entityAddress
     } else {
       throw new Error("Contract not initialized")
     }

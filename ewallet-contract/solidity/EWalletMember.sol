@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-
-pragma solidity ^0.7.0;
-pragma abicoder v2;
+pragma solidity ^0.8.0;
 
 /**
  * @title EWalletMember
@@ -233,9 +231,9 @@ contract EWalletMember {
       );
   }
 
-  constructor(string memory _memberName, string memory _deviceName) {
+  constructor(string memory _memberName, string memory _deviceName, address _owner) {
     uint16 memberId = _addMember(_memberName);
-    _addDevice(_deviceName, msg.sender, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor, or tx.origin
+    _addDevice(_deviceName, _owner, memberId); // 'msg.sender' is sender of current call, contract deployer for a constructor, or tx.origin
     _setRole(memberId, true, true, true, true, true, true);
   }
 

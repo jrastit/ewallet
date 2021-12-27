@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "@jest/globals": "^27.3.1",
+    "async-mutex": "^0.3.2",
+    "axios": "^0.24.0",
     "react-scripts": "^4.0.3",
     "solc": "^0.7.6"
   }
