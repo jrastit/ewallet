@@ -12,7 +12,7 @@ const entityRegistryFromJson = (json: string | null, signer?: ethers.Signer) => 
 }
 
 const entityRegistryFromAddress = async (
-  entityRegistryAddress: string, networkName: string, signer?: ethers.Signer
+  entityRegistryAddress: string | undefined, networkName: string, signer?: ethers.Signer
 ) => {
   console.log("entityRegistryAddress", entityRegistryAddress)
   if (entityRegistryAddress && signer) {

@@ -200,7 +200,7 @@ const getEWalletTokenContract = async (contractAddress: string, signer: ethers.S
 }
 
 const getIERC677Contract = async (contractAddress: string, signer: ethers.Signer) => {
-  return new ethers.Contract(contractAddress, getAbiERC677(), signer)
+  return new ethers.Contract(contractAddress, getAbiIERC677(), signer)
 }
 
 const getERC677Contract = async (contractAddress: string, signer: ethers.Signer) => {

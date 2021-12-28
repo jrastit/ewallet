@@ -1,11 +1,22 @@
 import { ethers } from 'ethers'
 
 import { network as networkList } from '../config/network.json'
+import { NetworkType } from '../type/networkType'
+import { WalletType } from '../type/walletType'
+import { walletListLoad } from '../util/walletStorage'
 
 declare global {
   interface Window {
     ethereum: any;
   }
+}
+
+const getNetworkList = async (): Promise<NetworkType[]> => {
+  return networkList.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+}
+
+const getWalletList = async (): Promise<WalletType[] | undefined> => {
+  return await walletListLoad()
 }
 
 const addHooks = () => {
@@ -16,7 +27,7 @@ const addHooks = () => {
 const getEntityRegistryAddress = (
   networkName: string,
 ) => {
-  return (networkList as any[]).filter((_networkItem) => _networkItem.name === networkName).map((_networkItem) => _networkItem.entityRegistryAddress)[0]
+  return (networkList as NetworkType[]).filter((_networkItem) => _networkItem.name === networkName).map((_networkItem) => _networkItem.entityRegistryAddress)[0]
 }
 
 const getWallet = (
@@ -74,5 +85,7 @@ export {
   getWallet,
   getBalance,
   getAddress,
-  getEntityRegistryAddress
+  getEntityRegistryAddress,
+  getNetworkList,
+  getWalletList,
 }

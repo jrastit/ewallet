@@ -18,7 +18,6 @@
       "chainId": 42,
       "blockExplorerTxPrefix": "https://kovan.etherscan.io/tx/",
       "faucet": "https://faucets.chain.link/kovan",
-      "entityRegistryAddress": "0x7fD3c809B37D617f217aF08C5862C2817f33730A",
       "contractDomainChainlink":{
         "linkAddress":"0xa36085F69e2889c224210F603D836748e7dC0088",
         "oracle":"0x9C0383DE842A3A0f403b0021F6F85756524d5599",
@@ -44,16 +43,14 @@
     {
       "name" : "oasisParatime",
       "url": "https://rpc.oasiseth.org:8545",
-      "chainId": 69,
-      "entityRegistryAddress": "0x18c246523F98CAa031c8F7deE08cb31Aa338aD07"
+      "chainId": 69
     },
     {
       "name" : "Harmony Testnet",
       "url": "https://api.s0.b.hmny.io",
       "chainId": 1666700000,
       "blockExplorerTxPrefix": "https://explorer.pops.one/#/",
-      "faucet": "https://faucet.pops.one/",
-      "entityRegistryAddress": "0xF9d9ca154e54477A0E5B0559895A3FE939d561D5"
+      "faucet": "https://faucet.pops.one/"
     }
   ]
 }

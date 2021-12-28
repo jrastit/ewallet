@@ -7,7 +7,7 @@ import { entityRegistryFromAddress, entityRegistryLoad, entityRegistryDelete, en
 import { getEntityRegistryAddress } from '../../util/networkInfo'
 
 
-const EntityListWidget = (props: {
+const EntityRegistryWidget = (props: {
   networkName: string,
   signer: ethers.Signer,
   address: string,
@@ -123,4 +123,4 @@ const EntityListWidget = (props: {
   </div>)
 }
 
-export default EntityListWidget
+export default EntityRegistryWidget

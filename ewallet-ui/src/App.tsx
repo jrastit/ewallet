@@ -1,21 +1,19 @@
 import { useState, useEffect, Fragment } from 'react';
-import { ethers } from 'ethers'
-import logo from './images/logo.png';
+
+
 import './App.css';
 import AppNav from './AppNav'
 import { Entity } from './class/Entity'
 import { EntityRegistry } from './class/EntityRegistry'
+import { WalletInfo } from './type/walletInfo'
+import { entityLoad } from './util/entityStorage'
 
-import {
-  entityLoad,
-} from './util/entityStorage'
-
+import WalletConnection from './section/walletConnection'
 import AdminEntity from './section/adminEntity'
 import AdminMemberList from './section/adminMemberList'
 import AdminMember from './section/adminMember'
 import BoxWidget from './component/boxWidget'
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import DisplayEntityOperationList from './component/display/displayEntityOperationList'
@@ -26,21 +24,15 @@ import EntityRegistryWidget from './component/entity/EntityRegistryWidget'
 import EntityListWidget from './component/entity/EntityListWidget'
 import CreateEntityWidget from './component/admin/createEntityWidget'
 
-import {
-  getAddress,
-  getWallet,
-  addHooks,
-} from './util/networkInfo'
+
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [isHome, setIsHome] = useState(1);
-  const [walletInfo, setWalletInfo] = useState<{
-    networkName : string | undefined,
-    address: string,
-    wallet: ethers.Wallet | undefined,
-    error: string | undefined
-  }>({
+  const [walletInfo, setWalletInfo] = useState<WalletInfo>({
+    type : undefined,
+    name : undefined,
     networkName : undefined,
     address: "Loading...",
     wallet: undefined,
@@ -49,6 +41,8 @@ function App() {
   const [entityRegistry, setEntityRegistry] = useState<EntityRegistry>()
   const [entity, _setEntity] = useState<Entity | null | undefined>(null)
   const [memberId, setMemberId] = useState(-1)
+
+
 
   const setEntity = async (entity : Entity | null | undefined) => {
     console.log("setEntity\n" + (entity ? (await entity.getInfoTxt()) : "null"))
@@ -72,31 +66,14 @@ function App() {
     })
   }
 
-  const updateAddress = (_networkName : string | undefined, _address: string, _wallet: ethers.Wallet | undefined) => {
-    console.log("address", _address)
-    if (walletInfo.address !== _address) {
-      setWalletInfo({
-        networkName : _networkName,
-        address: _address,
-        wallet: _wallet,
-        error: undefined
-      })
-    }
-  }
 
-  const updateWallet = (networkName: string, _wallet: ethers.Wallet) => {
-    getAddress(networkName, _wallet, updateAddress)
-  }
 
-  const updateError = (_error: string) => {
-    console.error("error : ", _error)
-    setWalletInfo({networkName:undefined, address: "error", wallet: undefined, error: _error })
-  }
+
 
   useEffect(() => {
     if (!walletInfo.wallet) {
-      getWallet(updateWallet, updateError)
-      addHooks()
+      //getWallet(updateWalletMetamask, updateError)
+      //addHooks()
     }else if (!entity) {
       entityLoad(walletInfo.wallet).then((storageEntity) => {
         if (storageEntity) setEntity(storageEntity)
@@ -122,18 +99,15 @@ function App() {
         { (!!isHome) &&
           <div className="flexCentered">
           <div>
-          <BoxWidget>
-            <img src={logo} className="App-logo" alt="logo" />
-          </BoxWidget>
-          <BoxWidget title="EWallet">
-            <p>Non-custodial wallet for entreprise</p>
-            <Button onClick={() => setIsHome(0)}>
-              Enter
-            </Button>
-          </BoxWidget>
+          <WalletConnection
+            walletInfo={walletInfo}
+            setWalletInfo={setWalletInfo}
+            setIsHome={setIsHome}
+          />
           </div>
           </div>
         }
+
 
         { !isHome && (
           <>

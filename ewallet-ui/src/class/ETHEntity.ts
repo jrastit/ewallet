@@ -136,7 +136,7 @@ class ETHEntity extends LocalEntity {
       this.name = await this.contract.name()
       this.balance = await this.updateBalance();
       const memberListChain = await this.contractMember.getMemberList()
-      /*
+
       this.operationList = await Promise.all((await this.contract.queryFilter(this.contract.filters.Operation())).map(async (operationChain: ethers.Event): Promise<OperationType> => {
         if (!operationChain.args) throw new Error("invalid argument in event")
         let name = operationChain.args._name
@@ -156,7 +156,7 @@ class ETHEntity extends LocalEntity {
         }
 
       }))
-      */
+
       this.memberList = await Promise.all<MemberType[]>(memberListChain.map(async (memberChain: {
         name: string,
         role: {
