@@ -38,6 +38,23 @@
   max-width: 10ch;*/
 }
 
+.btn-box {
+    box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    padding: .25em .25em;
+    color: #000;
+    background: transparent;
+    border: 0;
+    border-radius: .25rem;
+    opacity: .5;
+}
+
+.toast-header .btn-box {
+    margin-right: -.375rem;
+    margin-left: .75rem;
+}
+
 .App-header {
   /*
   background-color: #282c34;

@@ -14,7 +14,7 @@ const AppNav = (props: {
   setIsHome: (number: number) => void,
   setEntity: (entity: Entity | null) => void,
   entity: Entity | undefined | null,
-  address: string,
+  address?: string,
   error: string | undefined,
   networkName: string | undefined,
 }) => {

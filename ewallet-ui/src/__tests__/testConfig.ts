@@ -3,20 +3,9 @@ const networkName = "ganache"
 
 
 import { network as networkList } from '../config/network.json'
+import { NetworkType } from '../type/networkType'
 
-const network: {
-  name: string
-  url: string
-  chainId: number
-  blockExplorerTxPrefix?: string
-  faucet?: string
-  entityRegistryAddress?: string
-  contractDomainChainlink?: {
-    linkAddress: string,
-    oracle: string,
-    jobId: string,
-  }
-} = networkList.filter((network) => network.name === networkName)[0]
+const network: NetworkType = networkList.filter((network) => network.name === networkName)[0]
 
 let privateKeys = require("../../key/" + networkName + "PrivateKeys.json")
 const url = network.url

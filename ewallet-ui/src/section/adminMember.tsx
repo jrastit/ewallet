@@ -1,5 +1,7 @@
 import { Fragment, useState, useEffect } from 'react'
+import SpaceWidget from '../component/spaceWidget'
 import BoxWidget from '../component/boxWidget'
+import BoxWidgetHide from '../component/boxWidgetHide'
 import DisplayDeviceList from '../component/display/displayDeviceList'
 import DisplayBalanceWidget from '../component/util/displayBalanceWidget'
 import AddDeviceWidget from '../component/admin/addDeviceWidget'
@@ -73,6 +75,7 @@ const AdminMember = (props: {
       }
       {member &&
         <div>
+          <SpaceWidget>
           <BoxWidget>
             <MemberSelectWidget
               name = "select member"
@@ -81,6 +84,8 @@ const AdminMember = (props: {
               onChange = {updateMemberEvent}
             />
           </BoxWidget>
+          </SpaceWidget>
+          <SpaceWidget>
           <BoxWidget title={"Member : " + member.memberName}>
             Personal account :
             <DisplayBalanceWidget balance={member.balance} entity={props.entity} />
@@ -96,23 +101,24 @@ const AdminMember = (props: {
               })
             }
           </BoxWidget>
-          <BoxWidget title={"Set allowance"}>
+          <BoxWidgetHide title={"Set allowance"}>
           <SetAllowanceWidget
             entity={props.entity}
             memberId={memberId.current}
           />
-          </BoxWidget>
+          </BoxWidgetHide>
+          </SpaceWidget>
         </div>
       }
       { member &&
-      <>
-        <BoxWidget title='Add device'>
+      <SpaceWidget>
+        <BoxWidgetHide title='Add device'>
           <AddDeviceWidget entity={props.entity} memberId={memberId.current} />
-        </BoxWidget>
+        </BoxWidgetHide>
         <BoxWidget title='Device list'>
           <DisplayDeviceList entity={props.entity} memberId={memberId.current} />
         </BoxWidget>
-      </>
+      </SpaceWidget>
       }
 
     </div>

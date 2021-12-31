@@ -1,8 +1,8 @@
 import Form from 'react-bootstrap/Form';
 
 const SelectWidget = (props: {
-  name: string,
-  value: string,
+  name?: string,
+  value?: string,
   onChange: (event: any) => void,
   option: Array<{
     value: string,

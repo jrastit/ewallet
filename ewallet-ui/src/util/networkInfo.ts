@@ -15,8 +15,24 @@ const getNetworkList = async (): Promise<NetworkType[]> => {
   return networkList.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
 }
 
-const getWalletList = async (): Promise<WalletType[] | undefined> => {
-  return await walletListLoad()
+const getWalletList = async (password: string): Promise<WalletType[] | undefined> => {
+  return await walletListLoad(password)
+}
+
+const getProvider = async (networkName: string | undefined, setError: (error: string) => void) => {
+  if (!networkName) return null
+  const network = networkList.filter((network) => network.name === networkName)[0]
+  try {
+    if (network) {
+      return new ethers.providers.JsonRpcProvider(network.url)
+    } else {
+      console.error("error in get network ", networkName)
+    }
+
+  } catch (error: any) {
+    console.error("error in get network ", error)
+    setError("Error in Metamask : " + error.message)
+  }
 }
 
 const addHooks = () => {
@@ -56,7 +72,10 @@ const getWallet = (
 const getAddress = (
   networkName: string,
   wallet: ethers.Wallet,
-  setAddress: (networkName: string | undefined, address: string, wallet: ethers.Wallet | undefined) => void
+  setAddress: (
+    networkName: string | undefined,
+    address: string,
+    wallet: ethers.Wallet | undefined) => void,
 ) => {
   wallet.getAddress().then(
     (address) => {
@@ -88,4 +107,5 @@ export {
   getEntityRegistryAddress,
   getNetworkList,
   getWalletList,
+  getProvider,
 }

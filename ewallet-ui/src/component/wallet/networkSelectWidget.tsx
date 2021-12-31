@@ -3,17 +3,27 @@ import SelectWidget from '../selectWidget'
 import { getNetworkList } from '../../util/networkInfo'
 
 const NetworkSelectWidget = (props: {
-  name: string,
-  value: string,
-  onChange: (event: any) => void,
+  walletValue ?: string
+  value?: string
+  setNetwork: (networkName : string) => void
 }) => {
 
+  const setNetwork = (event : {target : {name : string, value : string}}) => {
+    const networkName = event.target.value
+    if (networkName !== props.value){
+      props.setNetwork(networkName);
+    }
+  }
+
   const [option, setOption] = useState<Array<{
-    name: string,
-    value: string,
+    name: string
+    value: string
   }>>([])
 
   useEffect(() => {
+    if (!props.walletValue && props.value){
+      props.setNetwork(props.value)
+    }
     if (option.length === 0) {
       getNetworkList().then(networkList => {
         const _option = networkList.map(network => {
@@ -22,13 +32,8 @@ const NetworkSelectWidget = (props: {
             name: network.name,
           }
         })
-        if (_option[0])
-          props.onChange({
-            target: {
-              name: props.name,
-              value: _option[0].value,
-            }
-          })
+        if (_option[0] && (!props.value))
+          props.setNetwork(_option[0].value)
         setOption(_option)
       })
     }
@@ -36,9 +41,9 @@ const NetworkSelectWidget = (props: {
 
   return (
     <SelectWidget
-      name={props.name}
+      name='networkSelect'
       value={props.value}
-      onChange={props.onChange}
+      onChange={setNetwork}
       option={option}
     />
   )

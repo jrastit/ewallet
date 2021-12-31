@@ -12,37 +12,37 @@ import WalletConnection from './section/walletConnection'
 import AdminEntity from './section/adminEntity'
 import AdminMemberList from './section/adminMemberList'
 import AdminMember from './section/adminMember'
+import EntityTransfer from './section/entityTransfer'
+import SpaceWidget from './component/spaceWidget'
 import BoxWidget from './component/boxWidget'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import DisplayEntityOperationList from './component/display/displayEntityOperationList'
-import DisplayEntitySendToApproveList from './component/display/displaySendToApproveList'
-import PayEntity from './component/transaction/payEntityWidget'
-import SendWidget from './component/transaction/sendWidget'
+
 import EntityRegistryWidget from './component/entity/EntityRegistryWidget'
 import EntityListWidget from './component/entity/EntityListWidget'
 import CreateEntityWidget from './component/admin/createEntityWidget'
-
-
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [isHome, setIsHome] = useState(1);
+
+  console.log("Home", isHome)
+
   const [walletInfo, setWalletInfo] = useState<WalletInfo>({
     type : undefined,
     name : undefined,
     networkName : undefined,
-    address: "Loading...",
+    address: undefined,
     wallet: undefined,
     error: undefined,
   })
   const [entityRegistry, setEntityRegistry] = useState<EntityRegistry>()
   const [entity, _setEntity] = useState<Entity | null | undefined>(null)
   const [memberId, setMemberId] = useState(-1)
-
-
+  const [password, setPassword] = useState<string | null>()
 
   const setEntity = async (entity : Entity | null | undefined) => {
     console.log("setEntity\n" + (entity ? (await entity.getInfoTxt()) : "null"))
@@ -53,7 +53,7 @@ function App() {
     entity && entity.update()
   }
 
-  if (walletInfo.wallet && entity) {
+  if (walletInfo.wallet && walletInfo.address && entity) {
     entity.getMemberIdFromAddress(walletInfo.address).then(
       (_memberId) => {
         if (_memberId !== memberId) {
@@ -65,10 +65,6 @@ function App() {
       setMemberId(-1);
     })
   }
-
-
-
-
 
   useEffect(() => {
     if (!walletInfo.wallet) {
@@ -100,6 +96,8 @@ function App() {
           <div className="flexCentered">
           <div>
           <WalletConnection
+            password={password}
+            setPassword={setPassword}
             walletInfo={walletInfo}
             setWalletInfo={setWalletInfo}
             setIsHome={setIsHome}
@@ -111,7 +109,7 @@ function App() {
 
         { !isHome && (
           <>
-          {!entity && !!walletInfo.wallet && !!walletInfo.networkName && (
+          {!entity && !!walletInfo.wallet && !!walletInfo.networkName && !!walletInfo.address && (
             <div className='flexCentered'>
             <div>
               <BoxWidget title='Select Entity Registry'>
@@ -146,7 +144,7 @@ function App() {
             </div>
             </div>
           )}
-          {!!entity &&
+          {!!entity && walletInfo.address &&
             <Row>
               <Col>
                 <AdminEntity memberId={memberId} entity={entity} refreshEntity={refreshEntity}/>
@@ -156,21 +154,13 @@ function App() {
               <Col><AdminMember memberId={memberId} entity={entity} /></Col>
               }
               <Col>
-                <BoxWidget title='Pay entity'>
-                  <PayEntity memberId={memberId} entity={entity} address={walletInfo.address}/>
-                </BoxWidget>
-                { memberId > -1 &&
-                <BoxWidget title='Send from entity'>
-                  <SendWidget memberId={memberId} entity={entity}/>
-                </BoxWidget>
-                }
-                <BoxWidget title='Send to Approve'>
-                  <DisplayEntitySendToApproveList entity={entity}/>
-                </BoxWidget>
+                <EntityTransfer  memberId={memberId} entity={entity} walletInfo={walletInfo} />
               </Col><Col>
+              <SpaceWidget>
                 <BoxWidget title='Entity operation'>
                   <DisplayEntityOperationList entity={entity} />
                 </BoxWidget>
+              </SpaceWidget>
               </Col>
             </Row>
           }

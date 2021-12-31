@@ -8,7 +8,10 @@ const circleIcon = (className: string) => (
   </svg>
 )
 
-const WalletWidget = (props: { address: string, error: string | undefined }) => {
+const WalletWidget = (props: {
+  address?: string,
+  error: string | undefined
+}) => {
 
   const render = () => {
 

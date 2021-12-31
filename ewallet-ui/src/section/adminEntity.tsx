@@ -1,5 +1,7 @@
 import { Entity } from '../class/Entity'
+import SpaceWidget from '../component/spaceWidget'
 import BoxWidget from '../component/boxWidget'
+import BoxWidgetHide from '../component/boxWidgetHide'
 import SimpleButton from '../component/util/simpleButton'
 import DisplayEntityBalance from '../component/display/displayEntityBalance'
 import FundEntityWidget from '../component/admin/fundEntityWidget'
@@ -11,22 +13,26 @@ const AdminEntity = (props: {
   refreshEntity: () => void,
 }) => {
   return (
-    <div>
+    <>
+    <SpaceWidget>
       <BoxWidget>
         <SimpleButton name="Refresh entity" onClick={props.refreshEntity}/>
       </BoxWidget>
+    </SpaceWidget>
+    <SpaceWidget>
       <BoxWidget title={"Entity : " + props.entity.name}>
         {!!props.entity && <div><DisplayEntityBalance entity={props.entity} /></div>}
       </BoxWidget>
       { props.memberId > -1 && (<>
-      <BoxWidget title='Fund Entity'>
+      <BoxWidgetHide title='Fund Entity'>
         <FundEntityWidget entity={props.entity} memberId={props.memberId} />
-      </BoxWidget>
-      <BoxWidget title='Withdraw from Entity'>
+      </BoxWidgetHide>
+      <BoxWidgetHide title='Withdraw from Entity'>
         <WithdrawEntityWidget entity={props.entity} memberId={props.memberId} />
-      </BoxWidget>
+      </BoxWidgetHide>
       </>)}
-    </div>
+    </SpaceWidget>
+    </>
   )
 }
 

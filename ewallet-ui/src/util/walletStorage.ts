@@ -4,12 +4,51 @@ import {
   walletListFromJson,
   walletListToJson,
   walletNiceName,
+  WalletConfigType,
+  walletConfigFromJson,
+  walletConfigToJson,
 } from '../type/walletType'
 
-const walletListLoad = async () => {
+const walletConfigLoad = (): WalletConfigType => {
+  let walletConfig
+  try {
+    walletConfig = walletConfigFromJson(localStorage.getItem("walletConfig"))
+    if (!walletConfig) {
+      return {}
+    }
+  } catch (error) {
+    console.error(error)
+    return {}
+  }
+  return walletConfig
+}
+
+const walletConfigUpdatePassword = (password: string | undefined, passwordCheck: string) => {
+  let walletConfig = walletConfigLoad()
+  walletConfig.passwordCheck = passwordCheck
+  walletConfig.password = password
+  walletConfigSave(walletConfig)
+  return walletConfig
+}
+
+const walletConfigSave = async (walletConfig: WalletConfigType) => {
+  let walletConfigStr
+  try {
+    walletConfigStr = walletConfigToJson(walletConfig)
+    if (walletConfigStr) {
+      localStorage.setItem("walletConfig", walletConfigStr)
+    } else {
+      console.error("Wallet config is empty")
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const walletListLoad = async (password: string) => {
   let walletList
   try {
-    walletList = walletListFromJson(localStorage.getItem("walletList"))
+    walletList = walletListFromJson(localStorage.getItem("walletList"), password)
     if (walletList) {
       walletList.sort((a, b) => {
         const name = walletNiceName(a)
@@ -24,18 +63,18 @@ const walletListLoad = async () => {
   return walletList
 }
 
-const walletListLoadAddress = async (address: string) => {
-  const walletList = await walletListLoad()
+const walletListLoadAddress = async (address: string, password: string) => {
+  const walletList = await walletListLoad(password)
   if (walletList) {
     const walletAddress = walletList.filter(wallet => wallet.address === address)
     if (walletAddress) return walletAddress[0]
   }
 }
 
-const walletListSave = async (walletList: WalletType[]) => {
+const walletListSave = async (walletList: WalletType[], password: string) => {
   let walletListStr
   try {
-    walletListStr = walletListToJson(walletList)
+    walletListStr = walletListToJson(walletList, password)
     if (walletListStr) {
       localStorage.setItem("walletList", walletListStr)
     } else {
@@ -46,7 +85,7 @@ const walletListSave = async (walletList: WalletType[]) => {
   }
 }
 
-const walletAdd = async (name: string, pkey: string) => {
+const walletAdd = async (name: string, pkey: string, password: string) => {
   let ethersWallet: ethers.Wallet
   if (!pkey) {
     ethersWallet = ethers.Wallet.createRandom()
@@ -59,23 +98,39 @@ const walletAdd = async (name: string, pkey: string) => {
     address: await ethersWallet.getAddress(),
     pkey,
   }
-  let walletList = await walletListLoad()
+  let walletList = await walletListLoad(password)
   if (!walletList) {
     walletList = []
   }
+  if (walletList.filter((_wallet) => wallet.address === _wallet.address).length > 0) {
+    throw new Error("Wallet address already present")
+  }
   walletList.push(wallet)
-  walletListSave(walletList)
+  walletListSave(walletList, password)
   return wallet
 }
 
+const walletDelete = async (address: string, password: string) => {
+  let walletList = await walletListLoad(password)
+  if (walletList) {
+    walletList = walletList.filter(wallet => wallet.address !== address)
+    walletListSave(walletList, password)
+  }
+}
+
 const walletListDelete = () => {
-  return localStorage.removeItem("walletList")
+  localStorage.removeItem("walletList")
+  localStorage.removeItem("walletConfig")
 }
 
 export {
   walletListLoad,
   walletListSave,
+  walletDelete,
   walletListDelete,
+  walletConfigLoad,
+  walletConfigSave,
   walletAdd,
-  walletListLoadAddress
+  walletListLoadAddress,
+  walletConfigUpdatePassword
 }

@@ -3,8 +3,9 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { walletAdd } from '../../util/walletStorage'
 
-const AddWalletWidget = (props: {
-  onChange: (event: any) => void,
+const WalletAddWidget = (props: {
+  password: string,
+  setWallet: (address : string) => void,
 }) => {
 
   const [fieldValue, setFieldValue] = useState<any>({
@@ -26,13 +27,11 @@ const AddWalletWidget = (props: {
     walletAdd(
       fieldValue.name,
       fieldValue.pkey,
-    ).then(() => {
-      props.onChange({
-        target: {
-          name: fieldValue.name,
-          value: fieldValue.pkey,
-        }
-      })
+      props.password,
+    ).then((wallet) => {
+      props.setWallet(
+          wallet.address
+      )
       setSubmit(2)
     }).catch((error) => {
       setError(error.message)
@@ -72,4 +71,4 @@ const AddWalletWidget = (props: {
   )
 }
 
-export default AddWalletWidget
+export default WalletAddWidget
