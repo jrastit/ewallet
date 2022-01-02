@@ -1,10 +1,12 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect } from 'react'
 import { EntityRegistry } from '../../class/EntityRegistry'
 import { Entity } from '../../class/Entity'
 import { ethers } from 'ethers'
 import { Button } from 'react-bootstrap'
 import { entityRegistryFromAddress, entityRegistryLoad, entityRegistryDelete, entityRegistryHasCache } from '../../util/entityRegistryStorage'
 import { getEntityRegistryAddress } from '../../util/networkInfo'
+import BoxWidget from '../boxWidget'
+import AddressWidget from '../addressWidget'
 
 
 const EntityRegistryWidget = (props: {
@@ -87,13 +89,13 @@ const EntityRegistryWidget = (props: {
   )
 
   if (submit === 0) return (
-    <Fragment>
+    <>
       {props.entityRegistry && (
-        <div>Address:<br/>{props.entityRegistry.contractAddress}</div>
+        <BoxWidget>Entity Registry<br/>Address : <AddressWidget address={props.entityRegistry.contractAddress}/></BoxWidget>
       )}
 
       {!props.entityRegistry &&
-        <Fragment>
+        <>
           { entityRegistryAddress &&
             <div><Button variant="info" onClick={loadEntityFirst}>Load default entity registry</Button><br/><br/></div>
           }
@@ -102,16 +104,16 @@ const EntityRegistryWidget = (props: {
           }
 
           <div><Button variant="primary" onClick={newEntityRegistry}>Create entity registry for {props.networkName}</Button></div>
-        </Fragment>
+        </>
       }
       {props.entityRegistry &&
-        <Fragment>
-          <div><Button variant="info" onClick={loadEntityRegistry}>Reload entity registry</Button></div>
-          <div><Button variant="danger" onClick={deleteEntityRegistry}>Delte entity registry from cache</Button></div>
-        </Fragment>
+        <>
+          <BoxWidget><Button variant="info" onClick={loadEntityRegistry}>Reload entity registry</Button></BoxWidget>
+          <BoxWidget><Button variant="danger" onClick={deleteEntityRegistry}>Delte entity registry from cache</Button></BoxWidget>
+        </>
 
       }
-    </Fragment>
+    </>
   )
 
   else if (submit === 1) return (

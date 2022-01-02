@@ -38,9 +38,6 @@ const WalletConnection = (props: {
   const [balance, setBalance] = useState<ethers.BigNumber | undefined>()
   const [walletConfig, setWalletConfig] = useState(walletConfigLoad())
 
-  console.log(walletConfig)
-  console.log(props.walletInfo)
-
   const setWalletInfo = (walletInfo: WalletInfo) => {
     /*
     if (
@@ -190,8 +187,6 @@ const WalletConnection = (props: {
       error: _error
     })
   }
-
-  console.log("type", props.walletInfo.type, props.password)
 
   if (error) return (
     <div>

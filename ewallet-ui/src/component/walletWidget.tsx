@@ -1,3 +1,6 @@
+import Button from 'react-bootstrap/Button' 
+import AddressWidget from './addressWidget'
+
 const walletLearnUrl = 'https://ethereum.org/use/#_3-what-is-a-wallet' +
   '-and-which-one-should-i-use'
 
@@ -19,13 +22,13 @@ const WalletWidget = (props: {
 
     if (!window.hasOwnProperty('ethereum')) {
       return (
-        <p>
+        <>
           {circleIcon('fail')}
           Please install an <a
             href={walletLearnUrl} target='blank'>
             Ethereum wallet.
                     </a>
-        </p>
+        </>
       )
     } else if (!props.error && props.address === "error") {
 
@@ -39,36 +42,33 @@ const WalletWidget = (props: {
       )
     } else if (!props.error) {
       return (
-        <p>
+        <>
           <span className='is-family-monospace address'>
             {circleIcon('ok')}
-            {props.address}
+            <AddressWidget address={props.address}/>
           </span>
-        </p>
+        </>
       )
     } else if (props.error) {
       return (
-        <p>
+        <>
           {circleIcon('warn')}
           {props.error}
-        </p>
+        </>
       )
     } else {
       return (
-        <p className='button is-link is-rounded'
-          role='button'
-          //TODO fix connect
-          onClick={() => { window.ethereum.enable().then() }} >
-          Connect wallet
-                </p>
+        <Button size='sm' variant="warning" onClick={() => {
+           window.ethereum.enable().then()
+        }}>Connect wallet</Button>
       )
     }
   }
 
   return (
-    <div id='wallet-widget'>
+    <span id='wallet-widget'>
       {render()}
-    </div>
+    </span>
   )
 }
 

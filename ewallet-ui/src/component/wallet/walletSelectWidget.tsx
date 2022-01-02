@@ -8,6 +8,7 @@ import { walletNiceName } from '../../type/walletType'
 import WalletAddWidget from './walletAddWidget'
 import WalletDelete from './walletDelete'
 import BoxWidgetHide from '../boxWidgetHide'
+import AddressWidget from '../addressWidget'
 
 
 const WalletSelectWidget = (props: {
@@ -61,6 +62,10 @@ const WalletSelectWidget = (props: {
         onChange={setWallet}
         option={option}
         />
+        <p><br/></p>
+        { props.value &&
+          <p><AddressWidget address={props.value}/></p>
+        }
         { props.balance &&
           <p>Balance : {props.balance ? ethers.utils.formatEther(props.balance) : ""}</p>
         }

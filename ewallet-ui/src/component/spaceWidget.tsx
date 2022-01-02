@@ -1,6 +1,8 @@
 const SpaceWidget = (props: { children: any }) => {
   return (
-    <div style={{paddingTop:'.5em', paddingBottom:'.5em'}}>{props.children}</div>
+    <div className="d-flex justify-content-center" style={{paddingTop:'.5em', paddingBottom:'.5em'}}>
+      <div>{props.children}</div>
+      </div>
   )
 }
 

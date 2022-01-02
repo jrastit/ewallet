@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 
 
 import './App.css';
@@ -15,6 +15,7 @@ import AdminMember from './section/adminMember'
 import EntityTransfer from './section/entityTransfer'
 import SpaceWidget from './component/spaceWidget'
 import BoxWidget from './component/boxWidget'
+import BoxWidgetHide from './component/boxWidgetHide'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -28,8 +29,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [isHome, setIsHome] = useState(1);
-
-  console.log("Home", isHome)
 
   const [walletInfo, setWalletInfo] = useState<WalletInfo>({
     type : undefined,
@@ -110,9 +109,31 @@ function App() {
         { !isHome && (
           <>
           {!entity && !!walletInfo.wallet && !!walletInfo.networkName && !!walletInfo.address && (
-            <div className='flexCentered'>
-            <div>
-              <BoxWidget title='Select Entity Registry'>
+            <>
+            {entityRegistry &&
+              <SpaceWidget>
+              {
+                entityRegistry.entityList.length > 0 &&
+                <BoxWidget title='Entity list'>
+                <EntityListWidget
+                  setEntity={setEntity}
+                  entityRegistry={entityRegistry}
+                />
+                </BoxWidget>
+              }
+              <BoxWidgetHide title='Create New Entity' hide={entityRegistry.entityList.length > 0}>
+              <CreateEntityWidget
+                setEntity={setEntity}
+                networkName={walletInfo.networkName}
+                signer={walletInfo.wallet}
+                address={walletInfo.address}
+                entityRegistry={entityRegistry}
+              />
+              </BoxWidgetHide>
+              </SpaceWidget>
+            }
+            <SpaceWidget>
+              <BoxWidget title='Entity Registry'>
                 <EntityRegistryWidget
                   setEntity={setEntity}
                   networkName={walletInfo.networkName}
@@ -122,27 +143,9 @@ function App() {
                   setEntityRegistry={setEntityRegistry}
                 />
               </BoxWidget>
-            {entityRegistry &&
-              <Fragment>
-              <BoxWidget title='Entity list'>
-              <EntityListWidget
-                setEntity={setEntity}
-                entityRegistry={entityRegistry}
-              />
-              </BoxWidget>
-              <BoxWidget title='Create New Entity'>
-              <CreateEntityWidget
-                setEntity={setEntity}
-                networkName={walletInfo.networkName}
-                signer={walletInfo.wallet}
-                address={walletInfo.address}
-                entityRegistry={entityRegistry}
-              />
-              </BoxWidget>
-              </Fragment>
-            }
-            </div>
-            </div>
+            </SpaceWidget>
+
+            </>
           )}
           {!!entity && walletInfo.address &&
             <Row>

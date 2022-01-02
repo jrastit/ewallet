@@ -45,16 +45,15 @@ const AppNav = (props: {
         */false}
         </Nav>
       </Navbar.Collapse>
-
       <Navbar.Brand>
         <WalletWidget address={props.address} error={props.error} />
-
       </Navbar.Brand>
+      <Navbar.Brand>
       {!!props.entity &&
-        <Button variant="danger" onClick={() => {
+        <Button size='sm' variant="warning" onClick={() => {
           props.setEntity(null)
-        }}>Leave entity</Button>
-      }
+        }}>Leave entity</Button>}
+        </Navbar.Brand>
 
     </Navbar>
   )

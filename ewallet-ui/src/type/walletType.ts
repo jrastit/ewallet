@@ -1,6 +1,8 @@
 import encUTF8 from 'crypto-js/enc-utf8';
 import AES from 'crypto-js/aes';
 
+import { formatAddress } from '../util/formatData'
+
 type WalletType = {
   name?: string
   address: string
@@ -53,7 +55,7 @@ const walletConfigFromJson = (walletConfig: string | null): WalletConfigType | u
 
 const walletNiceName = (wallet: WalletType | undefined) => {
   if (wallet)
-    return wallet.name + ' (' + wallet.address + ')'
+    return formatAddress(wallet.address, wallet.name)
   return ''
 }
 
