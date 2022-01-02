@@ -4,9 +4,11 @@ import Button from 'react-bootstrap/Button'
 import logo from '../images/logo.png'
 import BoxWidget from '../component/boxWidget'
 import SpaceWidget from '../component/spaceWidget'
+import AddressWidget from '../component/addressWidget'
 import WalletDeleteAll from '../component/wallet/walletDeleteAll'
 import NetworkSelectWidget from '../component/wallet/networkSelectWidget'
 import WalletSelectWidget from '../component/wallet/walletSelectWidget'
+
 
 import WalletPassword from '../component/wallet/walletPassword'
 import {
@@ -211,19 +213,23 @@ const WalletConnection = (props: {
             <BoxWidget title='Metamask'>
               <p>Use wallet and network configured within Metamask</p>
               <p><a href='https://metamask.io/'>get Metamask here</a></p>
+              <SpaceWidget>
               <Button onClick={() => setWalletType('Metamask')}>
                 Enter with Metamask
-          </Button>
+                </Button>
+              </SpaceWidget>
             </BoxWidget>
           </SpaceWidget>
           <SpaceWidget>
             <BoxWidget title='Broswer'>
+              <p>Use your internet broswer cache to keep your wallet</p>
               {!!props.password &&
-                <BoxWidget title='Broswer'>
-                  <p>Use your internet broswer cache to keep your wallet</p>
+                  <>
+                  <SpaceWidget>
                   <Button onClick={() => setWalletType('Broswer')}>
                     Enter with broswer wallet
-          </Button>
+                  </Button>
+                  </SpaceWidget>
                   <SpaceWidget>
                     <Button variant="warning" onClick={() => {
                       walletConfig.password = undefined
@@ -231,19 +237,22 @@ const WalletConnection = (props: {
                       window.location.reload()
                     }}>Disconnect</Button>
                   </SpaceWidget>
-                </BoxWidget>
+                  </>
               }
               {!props.password &&
+                <SpaceWidget>
                 <WalletPassword
                   passwordCheck={walletConfig.passwordCheck}
                   setPassword={setPassword}
                   newPassword={newPassword}
                 />
+                </SpaceWidget>
               }
+
+              </BoxWidget>
               {!!walletConfig.passwordCheck &&
                 <WalletDeleteAll />
               }
-            </BoxWidget>
           </SpaceWidget>
         </>
       }
@@ -251,7 +260,7 @@ const WalletConnection = (props: {
         <SpaceWidget>
           <BoxWidget title='Metamask'>
             <p>network : {props.walletInfo.networkName ? props.walletInfo.networkName : "loading ..."}</p>
-            <p>address : {props.walletInfo.address ? props.walletInfo.address : "loading ..."}</p>
+            <p>address : <AddressWidget address={props.walletInfo.address ? props.walletInfo.address : "loading ..."}/></p>
             <Button onClick={() => props.setIsHome(0)}>Ok</Button>
           </BoxWidget>
           <BoxWidget>

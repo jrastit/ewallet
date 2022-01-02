@@ -31,10 +31,11 @@ const DisplayEntityOperation = (props: { entity: Entity }) => {
     return () => clearTimeout(timer);
   });
 
-  const displayOperation = (operation: OperationType) => {
+  const displayOperation = (operation: OperationType, id: number) => {
+    console.log(operation.blockNumber.toString())
     return (
       <ListGroup.Item
-        key={operation.blockNumber.toString()}
+        key={id.toString()}
         variant={operation.balance[0] &&
           operation.balance[0].balance.lt(0) ? "danger" : "success"}
       > { operation.temporary && (
@@ -54,7 +55,7 @@ const DisplayEntityOperation = (props: { entity: Entity }) => {
     ).reverse()
     return (
       <ListGroup>
-        {operationListToDisplay.map((operation) => { return displayOperation(operation) })}
+        {operationListToDisplay.map((operation, id) => { return displayOperation(operation, id) })}
         {_operationList.length > 10 &&
           <ListGroup.Item key="...">...</ListGroup.Item>
         }

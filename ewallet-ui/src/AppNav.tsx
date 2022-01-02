@@ -20,11 +20,11 @@ const AppNav = (props: {
 }) => {
   return (
     <Navbar bg="light" expand="lg">
-      <Navbar.Brand href="#home" onClick={() => props.setIsHome(1)}>EWallet{props.networkName && <> on {props.networkName}</>}</Navbar.Brand>
+      <Navbar.Brand onClick={() => props.setIsHome(1)}>EWallet{props.networkName && <> on {props.networkName}</>}</Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
-          <Nav.Link href="#home" onClick={() => props.setIsHome(1)}>Home</Nav.Link>
+          <Nav.Link onClick={() => props.setIsHome(1)}>Wallet</Nav.Link>
           {/*
           <Nav.Link href="#link">Link</Nav.Link>
           <NavDropdown title="Dropdown" id="basic-nav-dropdown">
