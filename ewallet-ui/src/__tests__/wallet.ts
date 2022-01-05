@@ -62,6 +62,7 @@ const testWallet = () => {
         walletList = getWalletList()
         entityRegistry = new EntityRegistry({
           signer: walletList[0],
+
           networkName,
         });
         await entityRegistry.init()

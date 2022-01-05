@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 
-
 import './App.css';
 import AppNav from './AppNav'
 import { Entity } from './class/Entity'
 import { EntityRegistry } from './class/EntityRegistry'
 import { WalletInfo } from './type/walletInfo'
 import { entityLoad } from './util/entityStorage'
+
+import { addEntityList, clearEntityList } from './reducer/entityListSlice'
 
 import WalletConnection from './section/walletConnection'
 import AdminEntity from './section/adminEntity'
@@ -27,6 +28,8 @@ import CreateEntityWidget from './component/admin/createEntityWidget'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import { useAppSelector, useAppDispatch } from './hooks'
+
 function App() {
   const [isHome, setIsHome] = useState(1);
 
@@ -40,16 +43,41 @@ function App() {
   })
   const [entityRegistry, setEntityRegistry] = useState<EntityRegistry>()
   const [entity, _setEntity] = useState<Entity | null | undefined>(null)
+  const [version, setVersion] = useState(-1)
   const [memberId, setMemberId] = useState(-1)
   const [password, setPassword] = useState<string | null>()
 
+  const entityList = useAppSelector((state) => state.entityListSlice.entityList)
+  const dispatch = useAppDispatch()
+
+  const destroyEntityRegistry = () => {
+    if (entityRegistry){
+      entityRegistry.destroy()
+      setEntityRegistry(undefined)
+    }
+    dispatch(clearEntityList())
+  }
+
+  const updateEntityRegistry = (entityRegistry ?: EntityRegistry) => {
+    setEntityRegistry(entityRegistry)
+    if (entityRegistry){
+      entityRegistry.init()
+    }
+  }
+
+  const addEntityToList = (_entityRegistry: EntityRegistry, name: string, address: string) => {
+    if (_entityRegistry === entityRegistry || 1)
+      dispatch(addEntityList({ name, address }))
+  }
+
   const setEntity = async (entity : Entity | null | undefined) => {
-    console.log("setEntity\n" + (entity ? (await entity.getInfoTxt()) : "null"))
+    console.log("setEntity\n" + (entity && entity.getInfoTxt ? (await entity.getInfoTxt()) : "null"))
+    if (entity) entity.setVersion = setVersion
     _setEntity(entity);
   }
 
   const refreshEntity = async () => {
-    entity && entity.update()
+    entity && entity.update && entity.update()
   }
 
   if (walletInfo.wallet && walletInfo.address && entity) {
@@ -92,8 +120,6 @@ function App() {
           error={walletInfo.error}
         />}
         { (!!isHome) &&
-          <div className="flexCentered">
-          <div>
           <WalletConnection
             password={password}
             setPassword={setPassword}
@@ -101,8 +127,6 @@ function App() {
             setWalletInfo={setWalletInfo}
             setIsHome={setIsHome}
           />
-          </div>
-          </div>
         }
 
 
@@ -113,7 +137,7 @@ function App() {
             {entityRegistry &&
               <SpaceWidget>
               {
-                entityRegistry.entityList.length > 0 &&
+                entityList.length > 0 &&
                 <BoxWidget title='Entity list'>
                 <EntityListWidget
                   setEntity={setEntity}
@@ -121,7 +145,7 @@ function App() {
                 />
                 </BoxWidget>
               }
-              <BoxWidgetHide title='Create New Entity' hide={entityRegistry.entityList.length > 0}>
+              <BoxWidgetHide title='Create New Entity' hide={entityList.length > 0}>
               <CreateEntityWidget
                 setEntity={setEntity}
                 networkName={walletInfo.networkName}
@@ -135,12 +159,14 @@ function App() {
             <SpaceWidget>
               <BoxWidget title='Entity Registry'>
                 <EntityRegistryWidget
+                  addEntityToList={addEntityToList}
                   setEntity={setEntity}
                   networkName={walletInfo.networkName}
                   signer={walletInfo.wallet}
                   address={walletInfo.address}
                   entityRegistry={entityRegistry}
-                  setEntityRegistry={setEntityRegistry}
+                  setEntityRegistry={updateEntityRegistry}
+                  clearEntityRegistry={destroyEntityRegistry}
                 />
               </BoxWidget>
             </SpaceWidget>
@@ -161,15 +187,16 @@ function App() {
               </Col><Col>
               <SpaceWidget>
                 <BoxWidget title='Entity operation'>
-                  <DisplayEntityOperationList entity={entity} />
+                  <DisplayEntityOperationList
+                    entity={entity}
+                    version={version}
+                    />
                 </BoxWidget>
               </SpaceWidget>
               </Col>
             </Row>
           }
         </>)}
-
-
 
       </Container>
 

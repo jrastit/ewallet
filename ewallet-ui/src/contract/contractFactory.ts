@@ -1,16 +1,22 @@
 import { ethers } from 'ethers'
 
+
 import jsonEWalletRegistry from './solidity/compiled/EWalletRegistry.json'
 import jsonEWallet from './solidity/compiled/EWallet.json'
 import jsonEWalletMember from './solidity/compiled/EWalletMember.json'
 import jsonIEWalletDomain from './solidity/compiled/IEWalletDomain.json'
 import jsonEWalletDomain from './solidity/compiled/EWalletDomain.json'
 import jsonEWalletDomainChainlink from './solidity/compiled/EWalletDomainChainlink.json'
-import jsonEWalletToken from './solidity/compiled/EWalletMember.json'
+import jsonEWalletToken from './solidity/compiled/EWalletToken.json'
+import jsonEWalletERC20Info from './solidity/compiled/EWalletERC20Info.json'
 import jsonEWalletMemberFactory from './solidity/compiled/EWalletMemberFactory.json'
 import jsonEWalletFactory from './solidity/compiled/EWalletFactory.json'
-import jsonIERC677 from './solidity/compiled/ERC677.json'
+import jsonIERC677 from './solidity/compiled/IERC677.json'
 import jsonERC677 from './solidity/compiled/ERC677.json'
+import jsonENS from './solidity/compiled/ENS/ENS.json'
+import jsonENSRegistry from './solidity/compiled/ENS/ENSRegistry.json'
+import jsonENSResolver from './solidity/compiled/ENS/Resolver.json'
+import jsonENSPublicResolver from './solidity/compiled/ENS/PublicResolver.json'
 
 const getAbiRegistry = () => {
   return jsonEWalletRegistry.abi
@@ -40,6 +46,10 @@ const getAbiEWalletToken = () => {
   return jsonEWalletToken.abi
 }
 
+const getAbiEWalletERC20Info = () => {
+  return jsonEWalletERC20Info.abi
+}
+
 const getAbiMemberFactory = () => {
   return jsonEWalletMemberFactory.abi
 }
@@ -54,6 +64,22 @@ const getAbiERC677 = () => {
 
 const getAbiIERC677 = () => {
   return jsonIERC677.abi
+}
+
+const getAbiENS = () => {
+  return jsonENS.abi
+}
+
+const getAbiENSRegistry = () => {
+  return jsonENSRegistry.abi
+}
+
+const getAbiENSResolver = () => {
+  return jsonENSResolver.abi
+}
+
+const getAbiENSPublicResolver = () => {
+  return jsonENSPublicResolver.abi
 }
 
 const createMemberFactoryContract = async (signer: ethers.Signer) => {
@@ -150,6 +176,18 @@ const createEWalletTokenContract = async (signer: ethers.Signer, name: string, s
   return contract
 }
 
+const createEWalletERC20InfoContract = async (signer: ethers.Signer, ensAddress: string) => {
+  const factory = new ethers.ContractFactory(
+    getAbiEWalletERC20Info(),
+    jsonEWalletERC20Info.bytecode,
+    signer)
+  const contract = await factory.deploy(
+    ensAddress,
+  )
+  await contract.deployed()
+  return contract
+}
+
 const createERC677Contract = async (
   signer: ethers.Signer,
   initialAccount: string,
@@ -166,6 +204,35 @@ const createERC677Contract = async (
     initialBalance,
     tokenName,
     tokenSymbol,
+  )
+  await contract.deployed()
+  return contract
+}
+
+const createENSRegistryContract = async (
+  signer: ethers.Signer,
+) => {
+  const factory = new ethers.ContractFactory(
+    getAbiENSRegistry(),
+    jsonENSRegistry.bytecode,
+    signer)
+  const contract = await factory.deploy(
+  )
+  await contract.deployed()
+  return contract
+}
+
+const createENSPublicResolverContract = async (
+  signer: ethers.Signer,
+  registryAddress: string,
+) => {
+  const factory = new ethers.ContractFactory(
+    getAbiENSPublicResolver(),
+    jsonENSPublicResolver.bytecode,
+    signer)
+  const contract = await factory.deploy(
+    registryAddress,
+    ethers.constants.AddressZero,
   )
   await contract.deployed()
   return contract
@@ -199,12 +266,32 @@ const getEWalletTokenContract = async (contractAddress: string, signer: ethers.S
   return new ethers.Contract(contractAddress, getAbiEWalletToken(), signer)
 }
 
+const getEWalletERC20InfoContract = async (contractAddress: string, signer: ethers.Signer) => {
+  return new ethers.Contract(contractAddress, getAbiEWalletERC20Info(), signer)
+}
+
 const getIERC677Contract = async (contractAddress: string, signer: ethers.Signer) => {
   return new ethers.Contract(contractAddress, getAbiIERC677(), signer)
 }
 
 const getERC677Contract = async (contractAddress: string, signer: ethers.Signer) => {
   return new ethers.Contract(contractAddress, getAbiERC677(), signer)
+}
+
+const getENSContract = async (contractAddress: string, signer: ethers.Signer) => {
+  return new ethers.Contract(contractAddress, getAbiENS(), signer)
+}
+
+const getENSRegistryContract = async (contractAddress: string, signer: ethers.Signer) => {
+  return new ethers.Contract(contractAddress, getAbiENSRegistry(), signer)
+}
+
+const getENSResolverContract = async (contractAddress: string, signer: ethers.Signer) => {
+  return new ethers.Contract(contractAddress, getAbiENSResolver(), signer)
+}
+
+const getENSPublicResolverContract = async (contractAddress: string, signer: ethers.Signer) => {
+  return new ethers.Contract(contractAddress, getAbiENSPublicResolver(), signer)
 }
 
 export {
@@ -214,7 +301,10 @@ export {
   createDomainContract,
   createDomainChainlinkContract,
   createEWalletTokenContract,
+  createEWalletERC20InfoContract,
   createERC677Contract,
+  createENSRegistryContract,
+  createENSPublicResolverContract,
   getRegistryContract,
   getWalletContract,
   getMemberContract,
@@ -222,6 +312,12 @@ export {
   getDomainContract,
   getDomainChainlinkContract,
   getEWalletTokenContract,
+  getEWalletERC20InfoContract,
   getIERC677Contract,
   getERC677Contract,
+  getENSContract,
+  getENSRegistryContract,
+  getENSResolverContract,
+  getENSPublicResolverContract,
+
 }

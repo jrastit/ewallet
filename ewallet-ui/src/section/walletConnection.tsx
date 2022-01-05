@@ -41,20 +41,7 @@ const WalletConnection = (props: {
   const [walletConfig, setWalletConfig] = useState(walletConfigLoad())
 
   const setWalletInfo = (walletInfo: WalletInfo) => {
-    /*
-    if (
-      walletConfig.networkName !== walletInfo.networkName &&
-      walletConfig.walletAddress !== walletInfo.address &&
-      walletConfig.walletType !== walletInfo.type
-    ) {
-      walletConfig.networkName = walletInfo.networkName
-      walletConfig.walletAddress = walletInfo.address
-      walletConfig.walletType = walletInfo.type
-      walletConfigSave(walletConfig)
-    }
-    */
     props.setWalletInfo(walletInfo)
-
   }
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Entity } from '../../class/Entity'
 import { MemberType } from '../../type/memberType'
 import { memberListToJson, memberListFromJson } from '../../type/memberType'
@@ -7,9 +7,13 @@ import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import ListGroup from 'react-bootstrap/ListGroup';
 
 
-const DisplayMemberList = (props: { entity: Entity }) => {
+const DisplayMemberList = (props: {
+  entity : Entity
+  version : number
+}) => {
   const [memberList, setMemberList] = useState<Array<MemberType>>([])
   const [error, setError] = useState<string | undefined>()
+  const [version, setVersion] = useState(-1)
 
   const updateMemberList = (entity: Entity) => {
     entity.getMemberList().then((_memberList) => {
@@ -25,13 +29,10 @@ const DisplayMemberList = (props: { entity: Entity }) => {
     })
   }
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      updateMemberList(props.entity);
-    }, 2000);
-    // Clear timeout if the component is unmounted
-    return () => clearTimeout(timer);
-  });
+  if (props.entity.version > version){
+    setVersion(props.entity.version)
+    updateMemberList(props.entity)
+  }
 
   const displayMember = (member: MemberType) => {
     return (

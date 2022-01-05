@@ -37,12 +37,19 @@ const compileInput = (input: any, outputPath: string) => {
 
   if (output.errors) {
     for (var errorNb in output.errors) {
-      /*
+
       if (output.errors[errorNb].type === 'Warning') {
-        if (output.errors[errorNb].sourceLocation.file.startsWith("@chainlink/contracts/src/v0.7")) {
-          console.log("skip chainlink library warning")
-        } else if (output.errors[errorNb].sourceLocation.file.startsWith("@openzeppelin/contracts/token/ERC777/ERC777.sol")) {
-          console.log("skip ERC777 library warning")
+        if (output.errors[errorNb].sourceLocation.file.startsWith("@ensdomains/ens-contracts/contracts")) {
+          console.log("skip ens library warning")
+        } else if (output.errors[errorNb].sourceLocation.file.startsWith("@ensdomains/buffer/contracts")) {
+          console.log("skip ens buffer library warning")
+
+          /*
+          } else if (output.errors[errorNb].sourceLocation.file.startsWith("@chainlink/contracts/src/v0.7")) {
+            console.log("skip chainlink library warning")
+          } else if (output.errors[errorNb].sourceLocation.file.startsWith("@openzeppelin/contracts/token/ERC777/ERC777.sol")) {
+            console.log("skip ERC777 library warning")
+          */
         } else {
           console.log(output.errors[errorNb])
           hasError = 1;
@@ -51,12 +58,8 @@ const compileInput = (input: any, outputPath: string) => {
         console.log(output.errors[errorNb])
         hasError = 1;
       }
-      */
-      console.log(output.errors[errorNb])
-      hasError = 1;
     }
   }
-
   if (hasError) {
     console.log("copilation error")
     process.exit(1)
@@ -107,7 +110,7 @@ const buildContractConfig = (contract: string) => {
     }
   }
   config.sources[contract + ".sol"] = loadContract(contract + ".sol")
-  config.settings.outputSelection['*'][contract] = ['evm.bytecode.object', 'abi']
+  config.settings.outputSelection['*'][contract.slice(contract.lastIndexOf('/') + 1)] = ['evm.bytecode.object', 'abi']
   return config;
 }
 
@@ -120,7 +123,12 @@ const main = async () => {
     fs.rmSync(outputPath, { recursive: true })
   }
   fs.mkdirSync(outputPath)
-
+  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/registry/ENS"), outputPath + "ENS/")
+  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/registry/ENSRegistry"), outputPath + "ENS/")
+  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/resolvers/Resolver"), outputPath + "ENS/")
+  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/resolvers/PublicResolver"), outputPath + "ENS/")
+  compileInput(buildContractConfig("EWalletERC20InfoFactory"), outputPath)
+  compileInput(buildContractConfig("EWalletERC20Info"), outputPath)
   compileInput(buildContractConfig("IEWalletDomain"), outputPath)
   compileInput(buildContractConfig("EWalletDomain"), outputPath)
   compileInput(buildContractConfig("EWalletDomainChainlink"), outputPath)

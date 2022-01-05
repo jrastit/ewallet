@@ -116,7 +116,11 @@ const AdminMember = (props: {
           <AddDeviceWidget entity={props.entity} memberId={memberId.current} />
         </BoxWidgetHide>
         <BoxWidget title='Device list'>
-          <DisplayDeviceList entity={props.entity} memberId={memberId.current} />
+          <DisplayDeviceList
+            entity={props.entity}
+            version={props.entity.version}
+            memberId={memberId.current} 
+            />
         </BoxWidget>
       </SpaceWidget>
       }

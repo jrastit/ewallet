@@ -28,7 +28,7 @@ const PayEntityWidget = (props: {
 
   const formSubmit = (event: any) => {
     setSubmit(1)
-    props.entity.pay(
+    props.entity.pay && props.entity.pay(
       props.memberId,
       props.address,
       fieldValue.amount,
@@ -43,7 +43,7 @@ const PayEntityWidget = (props: {
   if (error) return (
     <div>
       <label>{error}</label>&nbsp;&nbsp;
-      <Button variant="danger" onClick={() => { setFieldValue(undefined); setSubmit(0); setError(undefined); props.entity.update() }}>Ok</Button>
+      <Button variant="danger" onClick={() => { setFieldValue(undefined); setSubmit(0); setError(undefined) }}>Ok</Button>
     </div>
   )
   else if (submit === 0) return (

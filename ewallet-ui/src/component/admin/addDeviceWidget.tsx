@@ -25,7 +25,7 @@ const AddDeviceWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.addSelfDevice(
+    props.entity.addSelfDevice && props.entity.addSelfDevice(
       props.memberId,
       fieldValue.name,
       fieldValue.wallet,

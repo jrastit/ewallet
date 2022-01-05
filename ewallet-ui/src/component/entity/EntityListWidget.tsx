@@ -1,21 +1,14 @@
-
-import { useEffect } from 'react'
 import { EntityRegistry } from '../../class/EntityRegistry'
 import { Entity } from '../../class/Entity'
 import ListGroup from 'react-bootstrap/ListGroup';
-
+import { useAppSelector } from '../../hooks'
 
 const EntityListWidget = (props: {
   entityRegistry: EntityRegistry,
   setEntity: ((entity: Entity) => void),
 }) => {
-  useEffect(() => {
-    const timer = setInterval(() => {
-      props.entityRegistry.update()
-    }, 10000);
-    // Clear timeout if the component is unmounted
-    return () => clearTimeout(timer);
-  });
+
+  const entityList = useAppSelector((state) => state.entityListSlice.entityList)
 
   const displayEntity = (entity: {name:string, address:string}) => {
     console.log("entity ", entity)
@@ -35,7 +28,7 @@ const EntityListWidget = (props: {
   }
 
   return (<div>
-    {displayEntityList(props.entityRegistry.entityList)}
+    {displayEntityList(entityList)}
   </div>)
 }
 

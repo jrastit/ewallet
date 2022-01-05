@@ -1,24 +1,33 @@
-import { useState, useEffect } from 'react'
-import { EntityRegistry } from '../../class/EntityRegistry'
+import { useState } from 'react'
+import { EntityRegistry, AddEntityToList } from '../../class/EntityRegistry'
 import { Entity } from '../../class/Entity'
 import { ethers } from 'ethers'
 import { Button } from 'react-bootstrap'
-import { entityRegistryFromAddress, entityRegistryLoad, entityRegistryDelete, entityRegistryHasCache } from '../../util/entityRegistryStorage'
+import {
+  entityRegistryFromAddress,
+  entityRegistryLoad,
+  entityRegistryDelete,
+  entityRegistryHasCache
+} from '../../util/entityRegistryStorage'
 import { getEntityRegistryAddress } from '../../util/networkInfo'
 import BoxWidget from '../boxWidget'
+import BoxWidgetHide from '../boxWidget'
 import AddressWidget from '../addressWidget'
 
 
 const EntityRegistryWidget = (props: {
+  addEntityToList: AddEntityToList,
   networkName: string,
   signer: ethers.Signer,
   address: string,
   setEntity: ((entity: Entity) => void),
   setEntityRegistry: ((entityRegistry: EntityRegistry | undefined) => void),
+  clearEntityRegistry: () => void,
   entityRegistry: EntityRegistry | undefined
 }) => {
 
   const [submit, setSubmit] = useState(0)
+  const [loadAddress, setLoadAddress] = useState<string>()
   const [error, setError] = useState<string | null>()
 
   const entityRegistryAddress = getEntityRegistryAddress(props.networkName)
@@ -31,11 +40,11 @@ const EntityRegistryWidget = (props: {
 
   const loadEntityRegistry = () => {
     setSubmit(1)
-
-    entityRegistryLoad(props.networkName, props.signer).then(
+    props.clearEntityRegistry()
+    entityRegistryLoad(props.networkName, props.addEntityToList, props.signer).then(
       _entityRegistry => {
         if (_entityRegistry) {
-          setSubmit(2)
+          setSubmit(0)
           props.setEntityRegistry(_entityRegistry)
         } else {
           setError("error loading entity registry")
@@ -50,23 +59,26 @@ const EntityRegistryWidget = (props: {
 
   const newEntityRegistry = () => {
     setSubmit(1)
+    props.clearEntityRegistry()
     new EntityRegistry({
       networkName: props.networkName,
       signer: props.signer,
+      addEntityToList : props.addEntityToList,
     }).init().then(_entityRegistry => {
       props.setEntityRegistry(_entityRegistry)
-      setSubmit(2)
+      setSubmit(0)
     }).catch((error) => {
       console.error(error)
       setError(error.message)
     })
   }
 
-  const loadEntityFirst = async () => {
+  const loadEntityFirst = async (address : string) => {
     setSubmit(1)
-    entityRegistryFromAddress(entityRegistryAddress, props.networkName, props.signer).then(
+    props.clearEntityRegistry()
+    entityRegistryFromAddress(address, props.networkName, props.addEntityToList, props.signer).then(
       (_entityRegistry) => {
-        setSubmit(2)
+        setSubmit(0)
         if (_entityRegistry){
           props.setEntityRegistry(_entityRegistry)
         }
@@ -76,10 +88,6 @@ const EntityRegistryWidget = (props: {
       setError(error.message)
     })
   }
-
-  useEffect(() => {
-
-  })
 
   if (error) return (
     <div>
@@ -91,19 +99,45 @@ const EntityRegistryWidget = (props: {
   if (submit === 0) return (
     <>
       {props.entityRegistry && (
-        <BoxWidget>Entity Registry<br/>Address : <AddressWidget address={props.entityRegistry.contractAddress}/></BoxWidget>
+        <BoxWidget>
+          Entity Registry<br/>
+          Address : <AddressWidget address={props.entityRegistry.contractAddress}/>
+        </BoxWidget>
       )}
 
       {!props.entityRegistry &&
         <>
           { entityRegistryAddress &&
-            <div><Button variant="info" onClick={loadEntityFirst}>Load default entity registry</Button><br/><br/></div>
+            <BoxWidget>
+              <Button
+                variant="info"
+                onClick={() => loadEntityFirst(entityRegistryAddress)}>
+                Load default entity registry
+              </Button>
+            </BoxWidget>
           }
           { registryCache &&
-            <div><Button variant="info" onClick={loadEntityRegistry}>Load saved entity registry</Button><br/><br/></div>
+            <BoxWidget>
+              <Button
+                variant="info"
+                onClick={loadEntityRegistry}>
+                Load saved entity registry
+              </Button>
+            </BoxWidget>
           }
-
-          <div><Button variant="primary" onClick={newEntityRegistry}>Create entity registry for {props.networkName}</Button></div>
+          <BoxWidgetHide title='Load entity from address'>
+            <p>Enter Address : <input name="loadAddress" onChange={event => {setLoadAddress(event.target.value)}}></input></p>
+            { !!loadAddress &&
+              <Button onClick={() => {!!loadAddress && loadEntityFirst(loadAddress)}}>Load entity</Button>
+            }
+          </BoxWidgetHide>
+          <BoxWidget>
+            <Button
+            variant="primary"
+            onClick={newEntityRegistry}>
+            Create entity registry for {props.networkName}
+            </Button>
+          </BoxWidget>
         </>
       }
       {props.entityRegistry &&

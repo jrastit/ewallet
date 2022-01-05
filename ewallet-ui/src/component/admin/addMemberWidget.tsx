@@ -25,7 +25,7 @@ const AddMemberWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.addMember(
+    props.entity.addMember && props.entity.addMember(
       fieldValue.wallet,
       fieldValue.memberName,
       fieldValue.deviceName,

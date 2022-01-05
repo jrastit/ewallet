@@ -1,14 +1,18 @@
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Entity } from '../../class/Entity'
 import { SendToApproveType } from '../../type/sendToApproveType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import {ListGroup} from 'react-bootstrap'
 
 
-const DisplayEntitySendToApprove = (props: { entity: Entity }) => {
+const DisplayEntitySendToApprove = (props: {
+  entity : Entity
+  version : number
+}) => {
   const [sendToApproveList, setSendToApproveList] = useState<Array<SendToApproveType>>([])
   const [error, setError] = useState<string | undefined>()
+  const [version, setVersion] = useState(-1)
 
   const updateSendToApprove = (entity: Entity) => {
     entity.getSendToApproveList().then((_sendToApproveList) => {
@@ -23,13 +27,11 @@ const DisplayEntitySendToApprove = (props: { entity: Entity }) => {
     })
   }
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      updateSendToApprove(props.entity);
-    }, 2000);
-    // Clear timeout if the component is unmounted
-    return () => clearTimeout(timer);
-  });
+  if (props.entity.version > version){
+    setVersion(props.entity.version)
+    updateSendToApprove(props.entity)
+  }
+
 
   const displaySendToApprove = (sendToApprove: SendToApproveType) => {
     return (

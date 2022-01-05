@@ -25,7 +25,10 @@ const EntityTransfer = (props:{
     </BoxWidgetHide>
     }
     <BoxWidgetHide title='Send to Approve'>
-      <DisplayEntitySendToApproveList entity={props.entity}/>
+      <DisplayEntitySendToApproveList
+      entity={props.entity}
+      version={props.entity.version}
+      />
     </BoxWidgetHide>
     </SpaceWidget>
   )

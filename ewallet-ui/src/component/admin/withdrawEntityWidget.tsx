@@ -25,7 +25,7 @@ const WithdrawEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.withdrawFund(
+    props.entity.withdrawFund && props.entity.withdrawFund(
       props.memberId,
       fieldValue.amount,
       fieldValue.token,

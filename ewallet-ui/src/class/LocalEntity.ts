@@ -138,7 +138,7 @@ class LocalEntity extends Entity {
     category: string,
     balance: Array<BalanceType>
   ) {
-    this.operationList.push({
+    const operation = {
       blockNumber: this.blockNumber,
       memberId,
       message: message,
@@ -146,7 +146,9 @@ class LocalEntity extends Entity {
       balance,
       date: new Date(),
       temporary: true,
-    })
+    }
+    this.operationList.push(operation)
+    return operation
   }
 
   async getBalance() {
@@ -285,13 +287,14 @@ class LocalEntity extends Entity {
     balanceAdd(this.balance, balance)
     const member = await this.getMemberFromId(memberId)
     balanceAdd(member.balance, balance)
-    this.addLog(
+    const operation = this.addLog(
       memberId,
       "Deposit of fund",
       "funding",
       balance,
     )
     this.save()
+    return [operation]
   }
 
   async withdrawFund(
@@ -310,13 +313,14 @@ class LocalEntity extends Entity {
       if (balanceGte(member.balance, balance)) {
         balanceSub(member.balance, balance)
         balanceSub(this.balance, balance)
-        this.addLog(
+        const operation = this.addLog(
           memberId,
           "Withdraw of fund",
           "funding",
           [{ token: token.name, balance: ethers.BigNumber.from(0).sub(amountBN) }],
         )
         this.save()
+        return [operation]
       } else {
         throw new Error("Not enought member fund")
       }
@@ -345,13 +349,14 @@ class LocalEntity extends Entity {
         balanceSub(member.allowance, balance)
         balanceSub(this.balance, balance)
         console.log("Send to " + to)
-        this.addLog(
+        const operation = this.addLog(
           memberId,
           name + " : " + reason,
           "debit",
           [{ token: token.name, balance: ethers.BigNumber.from(0).sub(amountBN) }],
         )
         this.save()
+        return [operation]
       } else {
         throw new Error("Not enought member allowance")
       }
@@ -415,13 +420,14 @@ class LocalEntity extends Entity {
     const balance = [{ token: token.name, balance: amountBN }]
     balanceAdd(this.balance, balance)
     console.log("Pay from " + from)
-    this.addLog(
+    const operation = this.addLog(
       memberId,
       name + " : " + reason,
       "credit",
       balance,
     )
     this.save()
+    return [operation]
   }
 
   async getInfoTxt(): Promise<string> {

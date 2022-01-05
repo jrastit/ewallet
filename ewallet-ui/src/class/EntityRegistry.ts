@@ -6,53 +6,76 @@ import {
   getWalletContract,
 } from '../contract/contractFactory'
 
+
 import { ETHEntity } from './ETHEntity'
+
+export type AddEntityToList = (entityRegistry: EntityRegistry, name: string, address: string) => void;
 
 class EntityRegistry {
   contractAddress?: string
   signer: ethers.Signer
   contract?: ethers.Contract
-  entityList: { name: string, address: string }[]
   networkName: string
+  addEntityToList?: AddEntityToList
 
   constructor(
     props: {
       signer: ethers.Signer,
       contractAddress?: string,
       networkName: string,
+      addEntityToList?: AddEntityToList
     }
   ) {
     this.contractAddress = props.contractAddress
     this.signer = props.signer
-    this.entityList = []
     this.networkName = props.networkName
+    this.addEntityToList = props.addEntityToList
+  }
+
+  async addListener() {
+    if (this.contract && this.contract.listenerCount("EWalletCreated") === 0) {
+      this.contract.on("EWalletCreated", (name: string, address: string) => {
+        if (this.addEntityToList) {
+          this.addEntityToList(this, name, address)
+        }
+      })
+    }
   }
 
   async init() {
+
     if (!this.contractAddress) {
       this.contract = await createRegistryContract(this.signer)
       this.contractAddress = this.contract.address
+      await this.addListener()
     } else {
       this.contract = await getRegistryContract(this.contractAddress, this.signer)
+      await this.addListener()
       await this.update()
     }
+
     this.save()
     return this
   }
 
   async update() {
     if (this.contract) {
+      console.log("Entity registry update")
       const entityListChain = await this.contract.getEntityList()
-      console.log("entityList", entityListChain)
+      entityListChain.map(async (address: string) => {
+        console.log(address, this.addEntityToList)
+        const contract = await getWalletContract(address, this.signer)
+        const name = await contract.name()
+        if (this.addEntityToList) {
+          this.addEntityToList(this, name, address)
+        }
+      })
+    }
+  }
 
-      const newEntityList: Array<{ name: string, address: string }> = await Promise.all<{ name: string, address: string }>(
-        entityListChain.map(async (address: string) => {
-          const contract = await getWalletContract(address, this.signer)
-          const name = await contract.name()
-          //console.log("entity : ", address, name)
-          return { name: name, address: address }
-        }));
-      this.entityList = newEntityList
+  async destroy() {
+    if (this.contract && this.contract.listenerCount("EWalletCreated") > 0) {
+      this.contract.removeAllListeners()
     }
   }
 
@@ -87,11 +110,6 @@ class EntityRegistry {
     return {
       networkName: this.networkName,
       contractAddress: this.contractAddress,
-      /*
-      entityList: this.entityList.map(entity => {
-        return entity.toString()
-      })
-      */
     }
   }
 

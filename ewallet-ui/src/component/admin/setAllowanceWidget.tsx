@@ -25,7 +25,7 @@ const SetAllowanceWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.setAllowance(
+    props.entity.setAllowance && props.entity.setAllowance(
       props.memberId,
       fieldValue.amount,
       fieldValue.token,

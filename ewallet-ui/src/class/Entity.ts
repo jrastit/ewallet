@@ -8,6 +8,8 @@ import { DeviceType } from '../type/deviceType'
 class Entity {
 
   name?: string
+  version: number
+  setVersion?: (version: number) => void
 
   constructor(
     name: string | undefined,
@@ -16,6 +18,7 @@ class Entity {
       throw new TypeError('Abstract class "Entity" cannot be instantiated directly');
     }
     this.name = name
+    this.version = 0
   }
 
   toString() {
@@ -26,16 +29,23 @@ class Entity {
     return this
   }
 
-  async getBalance(): Promise<BalanceType[]> {
-    throw new Error('You must implement this function');
+  incVersion() {
+    this.version += 1
+    if (this.setVersion) {
+      this.setVersion(this.version)
+    }
   }
+
+  getBalance?(): Promise<BalanceType[]>
 
   async getToken(
     tokenName: string
   ): Promise<TokenType> {
-    const token = (await this.getTokenList()).filter(token => token.name === tokenName)
-    if (token.length === 1) {
-      return token[0]
+    if (this.getTokenList) {
+      const token = (await this.getTokenList()).filter(token => token.name === tokenName)
+      if (token.length === 1) {
+        return token[0]
+      }
     }
     throw new Error("Token not found '" + tokenName + "'")
   }
@@ -43,20 +53,22 @@ class Entity {
   async getTokenFromAddress(
     contractAddress: string
   ): Promise<TokenType> {
-    const token = (await this.getTokenList()).filter(token => token.contractAddress === contractAddress)
-    if (token.length === 1) {
-      return token[0]
+    if (this.getTokenList) {
+      const token = (await this.getTokenList()).filter(token => token.contractAddress === contractAddress)
+      if (token.length === 1) {
+        return token[0]
+      }
     }
     throw new Error("Token not found '" + contractAddress + "'")
   }
 
-  async getTokenList(): Promise<TokenType[]> {
-    throw new Error('You must implement this function');
-  }
+  async getTokenList?(
 
-  async getOperationList(): Promise<OperationType[]> {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<TokenType[]>
+
+  async getOperationList?(
+
+  ): Promise<OperationType[]>
 
   async getSendToApproveList(): Promise<SendToApproveType[]> {
     throw new Error('You must implement this function');
@@ -106,86 +118,65 @@ class Entity {
     return member.device
   }
 
-  async addMember(
+  addMember?(
     memberWallet: string,
     memberName: string,
     deviceName: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<void>
 
-  async addSelfDevice(
+  addSelfDevice?(
     memberId: number,
     name: string,
     address: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<void>
 
-  async depositFund(
+  depositFund?(
     memberId: number,
     amount: string,
-    tokenName: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+    tokenName: string
+  ): Promise<OperationType[]>
 
-  async withdrawFund(
+  withdrawFund?(
     memberId: number,
     amount: string,
-    tokenName: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+    tokenName: string
+  ): Promise<OperationType[]>
 
-  async send(
+  send?(
     memberId: number,
     to: string,
     amount: string,
     tokenName: string,
     name: string,
     reason: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<OperationType[]>
 
-  async sendToApprove(
+  sendToApprove?(
     memberId: number,
     to: string,
     amount: string,
     tokenName: string,
     name: string,
     reason: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<void>
 
-  async setAllowance(
+  setAllowance?(
     memberId: number,
     amount: string,
     tokenName: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<void>
 
-  async pay(
+  pay?(
     memberId: number,
     amount: string,
     tokenName: string,
     name: string,
     reason: string,
     address: string,
-  ) {
-    throw new Error('You must implement this function');
-  }
+  ): Promise<OperationType[]>
 
-  async update() {
-    throw new Error('You must implement this function');
-  }
-
-  async getInfoTxt(): Promise<string> {
-    throw new Error('You must implement this function');
-  }
+  update?(): void
+  getInfoTxt?(): Promise<string>
 }
 
 export { Entity }

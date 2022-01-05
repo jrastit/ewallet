@@ -4,17 +4,27 @@ import { balanceToString, balanceFromString } from './balanceType'
 
 
 type OperationType = {
-  blockNumber: ethers.BigNumber,
-  memberId: number,
-  message: string,
-  category: string,
-  balance: Array<BalanceType>,
-  date: Date,
-  temporary?: boolean,
+  from?: string
+  to?: string
+  txHash?: string
+  txIndex?: number
+  logIndex?: number
+  blockNumber: ethers.BigNumber
+  memberId: number
+  message: string
+  category: string
+  balance: Array<BalanceType>
+  date: Date
+  temporary?: boolean
 }
 
 const operationToString = (operation: OperationType | undefined) => {
   if (operation) return {
+    from: operation.from,
+    to: operation.to,
+    txHash: operation.txHash,
+    txIndex: operation.txIndex,
+    logIndex: operation.logIndex,
     blockNumber: operation.blockNumber.toString(),
     memberId: operation.memberId,
     message: operation.message,
@@ -27,6 +37,11 @@ const operationToString = (operation: OperationType | undefined) => {
 
 const operationFromString = (operation: any) => {
   if (operation) return {
+    from: operation.from,
+    to: operation.to,
+    txHash: operation.txHash,
+    txIndex: operation.txIndex,
+    logIndex: operation.logIndex,
     blockNumber: ethers.BigNumber.from(operation.blockNumber),
     memberId: operation.memberId,
     message: operation.message,

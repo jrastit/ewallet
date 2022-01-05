@@ -26,6 +26,8 @@ contract EWallet {
 
     string public name;
 
+    IERC20[] ERC20TokenList;
+
     struct Balance {
       address token;
       uint256 balance;

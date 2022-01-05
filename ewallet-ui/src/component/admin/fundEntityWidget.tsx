@@ -25,7 +25,7 @@ const FundEntityWidget = (props: {
   }
 
   const formSubmit = (event: any) => {
-    props.entity.depositFund(
+    props.entity.depositFund && props.entity.depositFund(
       props.memberId,
       fieldValue.amount,
       fieldValue.token,

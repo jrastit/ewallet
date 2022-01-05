@@ -1,17 +1,21 @@
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Entity } from '../../class/Entity'
 import { OperationType } from '../../type/operationType'
 import DisplayBalanceWidget from '../util/displayBalanceWidget'
 import {Spinner, ListGroup} from 'react-bootstrap'
 
 
-const DisplayEntityOperation = (props: { entity: Entity }) => {
+const DisplayEntityOperation = (props: {
+  entity : Entity
+  version : number
+}) => {
   const [operationList, setOperationList] = useState<Array<OperationType>>([])
   const [error, setError] = useState<string | undefined>()
+  const [version, setVersion] = useState(-1)
 
   const updateOperation = (entity: Entity) => {
-    entity.getOperationList().then((_operationList) => {
+    entity.getOperationList && entity.getOperationList().then((_operationList) => {
       if (!operationList || JSON.stringify(_operationList) !== JSON.stringify(operationList)) {
         setOperationList([..._operationList])
       }
@@ -23,16 +27,12 @@ const DisplayEntityOperation = (props: { entity: Entity }) => {
     })
   }
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      updateOperation(props.entity);
-    }, 2000);
-    // Clear timeout if the component is unmounted
-    return () => clearTimeout(timer);
-  });
+  if (props.entity.version > version){
+    setVersion(props.entity.version)
+    updateOperation(props.entity)
+  }
 
   const displayOperation = (operation: OperationType, id: number) => {
-    console.log(operation.blockNumber.toString())
     return (
       <ListGroup.Item
         key={id.toString()}

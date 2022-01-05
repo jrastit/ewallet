@@ -1,18 +1,26 @@
-import { EntityRegistry } from '../class/EntityRegistry'
+import { EntityRegistry, AddEntityToList } from '../class/EntityRegistry'
 import { ethers } from 'ethers'
 
-const entityRegistryFromJson = (json: string | null, signer?: ethers.Signer) => {
+const entityRegistryFromJson = (
+  json: string | null,
+  addEntityToList: AddEntityToList,
+  signer?: ethers.Signer
+) => {
   if (json) {
     const props = JSON.parse(json)
     return new EntityRegistry({
       ...props,
-      signer: signer,
+      signer,
+      addEntityToList
     })
   }
 }
 
 const entityRegistryFromAddress = async (
-  entityRegistryAddress: string | undefined, networkName: string, signer?: ethers.Signer
+  entityRegistryAddress: string | undefined,
+  networkName: string,
+  addEntityToList: AddEntityToList,
+  signer?: ethers.Signer,
 ) => {
   console.log("entityRegistryAddress", entityRegistryAddress)
   if (entityRegistryAddress && signer) {
@@ -20,8 +28,9 @@ const entityRegistryFromAddress = async (
       signer,
       networkName,
       contractAddress: entityRegistryAddress,
+      addEntityToList,
     })
-    return await entityRegistry.init()
+    return entityRegistry
   }
 }
 
@@ -32,19 +41,23 @@ const entityRegistryHasCache = (networkName: string) => {
   return false
 }
 
-const entityRegistryLoad = async (networkName: string, signer?: ethers.Signer) => {
+const entityRegistryLoad = async (
+  networkName: string,
+  addEntityToList: AddEntityToList,
+  signer?: ethers.Signer
+) => {
   let entityRegistry
   try {
-    entityRegistry = entityRegistryFromJson(localStorage.getItem("entityRegistry_" + networkName), signer)
+    entityRegistry = entityRegistryFromJson(
+      localStorage.getItem("entityRegistry_" + networkName),
+      addEntityToList,
+      signer)
+    return entityRegistry
   } catch (error) {
     console.error(error)
     entityRegistryDelete(networkName)
     return
   }
-  if (entityRegistry) {
-    return await entityRegistry.init()
-  }
-
 }
 
 const entityRegistryDelete = (networkName: string) => {

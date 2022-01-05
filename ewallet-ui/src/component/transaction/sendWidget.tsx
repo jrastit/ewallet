@@ -31,7 +31,7 @@ const SendWidget = (props: {
   const formSubmit = (event: any) => {
     setSubmit(1)
     if (fieldValue.type === 'validation'){
-      props.entity.sendToApprove(
+      props.entity.sendToApprove && props.entity.sendToApprove(
         props.memberId,
         fieldValue.to,
         fieldValue.amount,
@@ -40,7 +40,7 @@ const SendWidget = (props: {
         fieldValue.reason,
       ).then(() => setSubmit(2)).catch(error => setError(error.message))
     } else {
-      props.entity.send(
+      props.entity.send && props.entity.send(
         props.memberId,
         fieldValue.to,
         fieldValue.amount,
@@ -57,7 +57,7 @@ const SendWidget = (props: {
   if (error) return (
     <div>
       <label>{error}</label>&nbsp;&nbsp;
-      <Button variant="danger" onClick={() => { setFieldValue(0); setSubmit(0); setError(undefined); props.entity.update() }}>Ok</Button>
+      <Button variant="danger" onClick={() => { setFieldValue(0); setSubmit(0); setError(undefined)}}>Ok</Button>
     </div>
   )
   else if (submit === 0) return (

@@ -5,7 +5,6 @@ import { MemberType } from '../type/memberType'
 import { TokenType } from '../type/tokenType'
 import { DeviceType } from '../type/deviceType'
 import { BalanceType } from '../type/balanceType'
-import { OperationType } from '../type/operationType'
 
 import { ethers } from 'ethers'
 
@@ -61,6 +60,15 @@ class ETHEntity extends LocalEntity {
 
   }
 
+  addListener() {
+    if (this.contract && this.contract.listenerCount("Operation") === 0) {
+      this.contract.on("Operation", (memberId: number, from: string, to: string, tokenAddress: string, value: ethers.BigNumber, name: string, reason: string, extra: any) => {
+        console.log({ memberId, from, to, tokenAddress, value, name, reason, extra })
+        this.addOperation(memberId, from, to, tokenAddress, value, name, reason, extra)
+      })
+    }
+  }
+
   async init() {
     if (this.entityRegistry && this.name && this.memberName && this.deviceName) {
       this.contractAddress = await this.entityRegistry.createEntity(this.name, this.memberName, this.deviceName)
@@ -77,6 +85,9 @@ class ETHEntity extends LocalEntity {
     } else {
       throw new Error("Entity init fail")
     }
+    this.addListener()
+    this.loadAllOperation()
+
 
     return this
   }
@@ -131,31 +142,68 @@ class ETHEntity extends LocalEntity {
     ))
   }
 
-  async update() {
+  async addOperation(
+    memberId: number,
+    from: string,
+    to: string,
+    tokenAddress: string,
+    value: ethers.BigNumber,
+    name: string,
+    reason: string,
+    extra: any
+  ) {
+    if (this.operationList.filter(operation =>
+      operation.blockNumber.eq(extra.blockNumber) &&
+      operation.txIndex === extra.txIndex &&
+      operation.logIndex === extra.logIndex).length === 0) {
+      if (memberId) {
+        name = (await this.getMemberFromId(memberId)).memberName
+      }
+      this.operationList = this.operationList.filter((operation) => !operation.temporary)
+      this.operationList.push({
+        from: from,
+        to: to,
+        txHash: extra.transactionHash,
+        txIndex: extra.transactionIndex,
+        logIndex: extra.logIndex,
+        blockNumber: ethers.BigNumber.from(extra.blockNumber),
+        memberId: memberId,
+        message: name + " : " + reason,
+        category: "operation",
+        date: new Date((await extra.getBlock()).timestamp),
+        balance: [{
+          balance: value,
+          token: (await this.getTokenFromAddress(tokenAddress)).name
+        }]
+      })
+      this.incVersion()
+    }
+  }
+
+  async loadAllOperation() {
     if (this.contract && this.contractMember) {
-      this.name = await this.contract.name()
-      this.balance = await this.updateBalance();
-      const memberListChain = await this.contractMember.getMemberList()
-
-      this.operationList = await Promise.all((await this.contract.queryFilter(this.contract.filters.Operation())).map(async (operationChain: ethers.Event): Promise<OperationType> => {
+      await Promise.all((
+        await this.contract.queryFilter(
+          this.contract.filters.Operation())
+      ).map(async (operationChain: ethers.Event) => {
         if (!operationChain.args) throw new Error("invalid argument in event")
-        let name = operationChain.args._name
-        if (operationChain.args._memberId) {
-          name = (await this.getMemberFromId(operationChain.args._memberId)).memberName
-        }
-        return {
-          blockNumber: ethers.BigNumber.from(operationChain.blockNumber),
-          memberId: operationChain.args._memberId,
-          message: name + " : " + operationChain.args._reason,
-          category: "operation",
-          date: new Date((await operationChain.getBlock()).timestamp),
-          balance: [{
-            balance: operationChain.args._value,
-            token: (await this.getTokenFromAddress(operationChain.args._tokenAddress)).name
-          }]
-        }
-
+        this.addOperation(
+          operationChain.args._memebrId,
+          operationChain.args._from,
+          operationChain.args._to,
+          operationChain.args._tokenAddress,
+          operationChain.args._value,
+          operationChain.args._name,
+          operationChain.args._reason,
+          operationChain,
+        )
       }))
+    }
+  }
+
+  async updateMemberList() {
+    if (this.contractMember) {
+      const memberListChain = await this.contractMember.getMemberList()
 
       this.memberList = await Promise.all<MemberType[]>(memberListChain.map(async (memberChain: {
         name: string,
@@ -224,6 +272,17 @@ class ETHEntity extends LocalEntity {
     }
   }
 
+  async update() {
+    if (this.contract && this.contractMember) {
+      console.log("update entity")
+
+      this.name = await this.contract.name()
+      this.balance = await this.updateBalance();
+      await this.updateMemberList()
+      this.incVersion()
+    }
+  }
+
   async addMember(
     memberWallet: string,
     memberName: string,
@@ -262,7 +321,7 @@ class ETHEntity extends LocalEntity {
     amount: string,
     tokenName: string,
   ) {
-    await super.depositFund(
+    const operationList = await super.depositFund(
       memberId,
       amount,
       tokenName
@@ -276,6 +335,7 @@ class ETHEntity extends LocalEntity {
       }
     }
     await this.update()
+    return operationList
   }
 
   async withdrawFund(
@@ -283,7 +343,7 @@ class ETHEntity extends LocalEntity {
     amount: string,
     tokenName: string,
   ) {
-    await super.withdrawFund(
+    const operationList = await super.withdrawFund(
       memberId,
       amount,
       tokenName
@@ -298,6 +358,7 @@ class ETHEntity extends LocalEntity {
       }
     }
     await this.update()
+    return operationList
   }
 
   async setAllowance(
@@ -329,7 +390,7 @@ class ETHEntity extends LocalEntity {
     name: string,
     reason: string,
   ) {
-    await super.send(
+    const operationList = await super.send(
       memberId,
       to,
       amount,
@@ -346,6 +407,7 @@ class ETHEntity extends LocalEntity {
       }
     }
     this.update()
+    return operationList
   }
 
   async sendToApprove(
@@ -385,7 +447,7 @@ class ETHEntity extends LocalEntity {
   ) {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
-    await super.pay(
+    const operationList = await super.pay(
       memberId,
       from,
       amount,
@@ -400,6 +462,7 @@ class ETHEntity extends LocalEntity {
       }
     }
     this.update()
+    return operationList
   }
 
   async getInfoTxt(): Promise<string> {

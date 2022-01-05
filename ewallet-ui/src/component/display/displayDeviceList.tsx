@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Entity } from '../../class/Entity'
 import { DeviceType } from '../../type/deviceType'
 import { deviceListToJson, deviceListFromJson } from '../../type/deviceType'
@@ -7,10 +7,12 @@ import ListGroup from 'react-bootstrap/ListGroup';
 
 const DisplayDeviceList = (props: {
   entity: Entity,
+  version : number,
   memberId: number,
 }) => {
   const [deviceList, setDeviceList] = useState<Array<DeviceType>>([])
   const [error, setError] = useState<string | undefined>()
+  const [version, setVersion] = useState(-1)
 
   const updateDeviceList = (memberId: number, entity: Entity) => {
     entity.getDeviceListFromMemberId(memberId).then((_deviceList) => {
@@ -26,13 +28,10 @@ const DisplayDeviceList = (props: {
     })
   }
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      updateDeviceList(props.memberId, props.entity);
-    }, 2000);
-    // Clear timeout if the component is unmounted
-    return () => clearTimeout(timer);
-  });
+  if (props.entity.version > version){
+    setVersion(props.entity.version)
+    updateDeviceList(props.memberId, props.entity)
+  }
 
   const displayDevice = (device: DeviceType) => {
     return (
