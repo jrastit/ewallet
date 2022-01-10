@@ -188,7 +188,14 @@ const main = async () => {
     file: [
       { contract: "EWalletChainlinkAggregator" },
       { contract: "EWalletERC20InfoFactory" },
-      { contract: "EWalletERC20Info" },
+      {
+        contract: "EWalletERC20Info",
+        arg: [
+          {
+            name: "ensAddress",
+            type: "string"
+          }]
+      },
       { contract: "IEWalletDomain" },
       { contract: "EWalletDomain" },
       {
@@ -248,7 +255,24 @@ const main = async () => {
           }
         ]
       },
-      { contract: "ERC677" },
+      {
+        contract: "ERC677",
+        arg: [
+          {
+            name: "initialAccount",
+            type: "string"
+          }, {
+            name: "initialBalance",
+            type: "ethers.BigNumber"
+          }, {
+            name: "tokenName",
+            type: "string"
+          }, {
+            name: "tokenSymbol",
+            type: "string"
+          }
+        ]
+      },
       { contract: "IERC677" },
       {
         contract: "@ensdomains/ens-contracts/contracts/registry/ENS",
