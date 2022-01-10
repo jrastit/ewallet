@@ -3,5 +3,8 @@ declare module "@ensdomains/ensjs" {
   export default class ENS {
     constructor(obj: any): void
     name(name: String): Name
+    ens: {
+      address: string
+    }
   };
 }

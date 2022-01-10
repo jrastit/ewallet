@@ -3,6 +3,14 @@ import * as fs from 'fs'
 import * as path from 'path';
 import * as fse from 'fs-extra';
 
+interface FileTs {
+  header: string[],
+  import: string[],
+  abi: string[],
+  create: string[],
+  get: string[],
+}
+
 const solidityPath = 'solidity/'
 
 const findImports = (_path: string) => {
@@ -29,9 +37,11 @@ const loadContract = (_path: string) => {
   }
 }
 
-const compileInput = (input: any, outputPath: string) => {
+const compileInput = (contractConfig: any, outputPath: string, fileTs: FileTs) => {
 
-  let output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImports }));
+  if (contractConfig.outputPath) outputPath = outputPath + contractConfig.outputPath
+
+  let output = JSON.parse(solc.compile(JSON.stringify(contractConfig.input), { import: findImports }));
 
   let hasError = 0;
 
@@ -91,11 +101,53 @@ const compileInput = (input: any, outputPath: string) => {
         process.exit(1)
       }
       fs.writeFileSync(outputPath + contractName + '.json', JSON.stringify(outputfile))
+      fileTs.import.push(
+        "import json" + contractName + " from './" + (contractConfig.outputPath || "") + contractName + '.json' + "'")
+      fileTs.abi.push(
+        "export const getAbi" + contractName + " = () => {\n" +
+        "\treturn json" + contractName + ".abi\n" +
+        "}\n")
+      if (contractSize > 0) {
+        if (!contractConfig.arg) {
+          contractConfig.arg = []
+        }
+        fileTs.create.push(
+          "export const createContract" + contractName + " = async (\n" +
+          contractConfig.arg.map((arg: { name: string, type: string }) => {
+            return "\t" + arg.name + " : " + arg.type + ",\n"
+          }).join("") +
+          "\tsigner: ethers.Signer\n" +
+          ") => {\n" +
+          "\tconst factory = new ethers.ContractFactory(\n" +
+          "\t\tjson" + contractName + ".abi,\n" +
+          "\t\tjson" + contractName + ".bytecode,\n" +
+          "\t\tsigner\n" +
+          "\t)\n" +
+          "\tconst contract = await factory.deploy(\n" +
+          contractConfig.arg.map((arg: { name: string, type: string }) => {
+            return "\t\t" + arg.name + (arg.type === "ethers.Contract" ? ".address" : "") + ",\n"
+          }).join("") +
+          "\t)\n" +
+          "\tawait contract.deployed()\n" +
+          "\treturn contract\n" +
+          "}\n")
+      }
+      fileTs.get.push(
+        "export const getContract" + contractName + " = (\n" +
+        "\tcontractAddress: string,\n" +
+        "\tsigner: ethers.Signer,\n" +
+        ") => {\n" +
+        "\treturn new ethers.Contract(\n" +
+        "\t\tcontractAddress,\n" +
+        "\t\tjson" + contractName + ".abi,\n" +
+        "\t\tsigner,\n" +
+        "\t)\n" +
+        "}\n")
     }
   }
 }
 
-const buildContractConfig = (contract: string) => {
+const buildContractConfig = (contractConfig: { contract: string, input?: any }) => {
   const config = {
     language: 'Solidity',
     sources: {},
@@ -109,13 +161,22 @@ const buildContractConfig = (contract: string) => {
       }
     }
   }
-  config.sources[contract + ".sol"] = loadContract(contract + ".sol")
-  config.settings.outputSelection['*'][contract.slice(contract.lastIndexOf('/') + 1)] = ['evm.bytecode.object', 'abi']
-  return config;
+  config.sources[contractConfig.contract + ".sol"] = loadContract(contractConfig.contract + ".sol")
+  config.settings.outputSelection['*'][contractConfig.contract.slice(contractConfig.contract.lastIndexOf('/') + 1)] = ['evm.bytecode.object', 'abi']
+  contractConfig.input = config
+  return contractConfig;
 }
 
 
 const main = async () => {
+
+  const fileTs = {
+    header: ["import { ethers } from 'ethers'"],
+    import: [],
+    abi: [],
+    create: [],
+    get: [],
+  }
 
   const outputPath = 'compiled/'
 
@@ -123,24 +184,101 @@ const main = async () => {
     fs.rmSync(outputPath, { recursive: true })
   }
   fs.mkdirSync(outputPath)
-  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/registry/ENS"), outputPath + "ENS/")
-  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/registry/ENSRegistry"), outputPath + "ENS/")
-  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/resolvers/Resolver"), outputPath + "ENS/")
-  compileInput(buildContractConfig("@ensdomains/ens-contracts/contracts/resolvers/PublicResolver"), outputPath + "ENS/")
-  compileInput(buildContractConfig("EWalletERC20InfoFactory"), outputPath)
-  compileInput(buildContractConfig("EWalletERC20Info"), outputPath)
-  compileInput(buildContractConfig("IEWalletDomain"), outputPath)
-  compileInput(buildContractConfig("EWalletDomain"), outputPath)
-  compileInput(buildContractConfig("EWalletDomainChainlink"), outputPath)
+  const defineSource = {
+    file: [
+      { contract: "EWalletChainlinkAggregator" },
+      { contract: "EWalletERC20InfoFactory" },
+      { contract: "EWalletERC20Info" },
+      { contract: "IEWalletDomain" },
+      { contract: "EWalletDomain" },
+      {
+        contract: "EWalletDomainChainlink",
+        arg: [
+          {
+            name: "linkAddress",
+            type: "string"
+          }, {
+            name: "oracle",
+            type: "string"
+          }, {
+            name: "jobId",
+            type: "string"
+          }
+        ]
+      },
+      {
+        contract: "EWalletMember",
+        arg: [
+          {
+            name: "memberName",
+            type: "string"
+          }, {
+            name: "deviceName",
+            type: "string"
+          }
+        ]
+      },
+      { contract: "EWalletMemberFactory" },
+      { contract: "EWallet" },
+      {
+        contract: "EWalletFactory",
+        arg: [
+          {
+            name: "memberFactoryContract",
+            type: "ethers.Contract"
+          }
+        ]
+      },
+      { contract: "EWalletRegistry" },
+      {
+        contract: "EWalletToken",
+        arg: [
+          {
+            name: "name",
+            type: "string"
+          }, {
+            name: "symbol",
+            type: "string"
+          }, {
+            name: "initialSupply",
+            type: "ethers.BigNumber"
+          }, {
+            name: "defaultOperators",
+            type: "string[]"
+          }
+        ]
+      },
+      { contract: "ERC677" },
+      { contract: "IERC677" },
+      {
+        contract: "@ensdomains/ens-contracts/contracts/registry/ENS",
+        outputPath: "ENS/"
+      }, {
+        contract: "@ensdomains/ens-contracts/contracts/registry/ENSRegistry",
+        outputPath: "ENS/"
+      },
+      {
+        contract: "@ensdomains/ens-contracts/contracts/resolvers/Resolver",
+        outputPath: "ENS/"
+      },
+      {
+        contract: "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver",
+        outputPath: "ENS/"
+      },
+    ]
+  }
+  defineSource.file.forEach((contractConfig: { contract: string, config?: any }) => {
+    compileInput(buildContractConfig(contractConfig), outputPath, fileTs)
+  })
 
-  compileInput(buildContractConfig("EWalletMember"), outputPath)
-  compileInput(buildContractConfig("EWalletMemberFactory"), outputPath)
-  compileInput(buildContractConfig("EWallet"), outputPath)
-  compileInput(buildContractConfig("EWalletFactory"), outputPath)
-  compileInput(buildContractConfig("EWalletRegistry"), outputPath)
-  compileInput(buildContractConfig("EWalletToken"), outputPath)
-  compileInput(buildContractConfig("ERC677"), outputPath)
-  compileInput(buildContractConfig("IERC677"), outputPath)
+  const fileTsOutput =
+    fileTs.header.map((str: string) => str).join('\n') + "\n\n" +
+    fileTs.import.map((str: string) => str).join('\n') + "\n\n" +
+    fileTs.abi.map((str: string) => str).join('\n') + "\n\n" +
+    fileTs.create.map((str: string) => str).join('\n') + "\n\n" +
+    fileTs.get.map((str: string) => str).join('\n') + "\n\n"
+
+  fs.writeFileSync(outputPath + "contractAutoFactory.ts", fileTsOutput)
 
   fs.rmSync('../ewallet-ui/src/contract/solidity/' + outputPath, { recursive: true, force: true })
 

@@ -1,7 +1,9 @@
 import * as ethers from 'ethers'
 import { getWalletList, constant } from './testConfig'
 
-import { DeployENSRegistry } from '../util/ENS'
+import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
+
+import { createEWalletERC20InfoContract } from '../contract/contractFactory'
 
 const testENS = () => {
 
@@ -41,10 +43,13 @@ const testENS = () => {
         await ens.name('eth-usd.data.eth').setAddress('ETH', constant.kovanDaiAddress)
         const address = await ens.name('eth-usd.data.eth').getAddress('ETH')
         expect(address).toBe(constant.kovanDaiAddress)
-
+        const contract = await createEWalletERC20InfoContract(walletList[0], ens.ens.address)
+        const address2 = await contract.resolveENS(ENSHash('eth-usd.data.eth'))
+        expect(address2).toBe(constant.kovanDaiAddress)
+        //expect(await contract.getENSChainlinkUSD('ETH')).toBe(constant.kovanDaiAddress)
         //const tx3 = await contract.addERC20Token("0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa", 'TEST', 'test')
         //console.log("tx2")
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         console.log(JSON.parse(e.error.body).error.message)
         expect(0).toBeTruthy()

@@ -27,4 +27,5 @@ async function DeployENSRegistry(signer: ethers.Signer) {
 
 export {
   DeployENSRegistry,
+  hash,
 }
