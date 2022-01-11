@@ -197,7 +197,15 @@ const main = async () => {
           }]
       },
       { contract: "IEWalletDomain" },
-      { contract: "EWalletDomain" },
+      {
+        contract: "EWalletDomain",
+        arg: [
+          {
+            name: "oracle",
+            type: "string"
+          }
+        ]
+      },
       {
         contract: "EWalletDomainChainlink",
         arg: [
@@ -226,7 +234,18 @@ const main = async () => {
         ]
       },
       { contract: "EWalletMemberFactory" },
-      { contract: "EWallet" },
+      {
+        contract: "EWallet",
+        arg: [
+          {
+            name: "name",
+            type: 'string'
+          }, {
+            name: "memberContract",
+            type: "ethers.Contract"
+          }
+        ]
+      },
       {
         contract: "EWalletFactory",
         arg: [
@@ -236,7 +255,15 @@ const main = async () => {
           }
         ]
       },
-      { contract: "EWalletRegistry" },
+      {
+        contract: "EWalletRegistry",
+        arg: [
+          {
+            name: "eWalletFactoryContract",
+            type: "ethers.Contract"
+          }
+        ]
+      },
       {
         contract: "EWalletToken",
         arg: [
@@ -287,6 +314,16 @@ const main = async () => {
       },
       {
         contract: "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver",
+        arg: [
+          {
+            name: "registry",
+            type: "string"
+          },
+          {
+            name: "wrapperAddress",
+            type: "string"
+          }
+        ],
         outputPath: "ENS/"
       },
     ]
@@ -298,7 +335,7 @@ const main = async () => {
   const fileTsOutput =
     fileTs.header.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.import.map((str: string) => str).join('\n') + "\n\n" +
-    fileTs.abi.map((str: string) => str).join('\n') + "\n\n" +
+    //fileTs.abi.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.create.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.get.map((str: string) => str).join('\n') + "\n\n"
 

@@ -2,9 +2,12 @@ import { ethers } from 'ethers'
 
 import {
   createRegistryContract,
-  getRegistryContract,
-  getWalletContract,
 } from '../contract/contractFactory'
+
+import {
+  getContractEWalletRegistry,
+  getContractEWallet,
+} from '../contract/solidity/compiled/contractAutoFactory'
 
 
 import { ETHEntity } from './ETHEntity'
@@ -49,7 +52,7 @@ class EntityRegistry {
       this.contractAddress = this.contract.address
       await this.addListener()
     } else {
-      this.contract = await getRegistryContract(this.contractAddress, this.signer)
+      this.contract = getContractEWalletRegistry(this.contractAddress, this.signer)
       await this.addListener()
       await this.update()
     }
@@ -64,7 +67,7 @@ class EntityRegistry {
       const entityListChain = await this.contract.getEntityList()
       entityListChain.map(async (address: string) => {
         console.log(address, this.addEntityToList)
-        const contract = await getWalletContract(address, this.signer)
+        const contract = getContractEWallet(address, this.signer)
         const name = await contract.name()
         if (this.addEntityToList) {
           this.addEntityToList(this, name, address)

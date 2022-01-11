@@ -4,9 +4,9 @@ import { getWalletList, constant } from './testConfig'
 import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
 
 import {
-  createEWalletERC20InfoContract,
-  createERC677Contract,
-} from '../contract/contractFactory'
+  createContractEWalletERC20Info,
+  createContractERC677,
+} from '../contract/solidity/compiled/contractAutoFactory'
 
 const testERC20Info = () => {
 
@@ -44,26 +44,28 @@ const testERC20Info = () => {
         await ens.name('eth-usd.data.eth').setResolver(resolver)
         await ens.name('eth-usd.data.eth').setAddress('ETH', constant.addressOne)
 
-        const token1 = await createERC677Contract(
-          walletList[0],
+        const token1 = await createContractERC677(
           await walletList[0].getAddress(),
           ethers.BigNumber.from(1000000),
           constant.tokenName,
           constant.tokenSymbol,
+          walletList[0],
         )
         expect(await token1.symbol()).toBe(constant.tokenSymbol)
         expect(await token1.name()).toBe(constant.tokenName)
         expect(await token1.decimals()).toBe(18)
 
-        const token2 = await createERC677Contract(
-          walletList[0],
+        const token2 = await createContractERC677(
           await walletList[0].getAddress(),
           ethers.BigNumber.from(1000000),
           constant.token2Name,
           constant.token2Symbol,
+          walletList[0],
         )
 
-        const contract = await createEWalletERC20InfoContract(walletList[0], ens.ens.address)
+        const contract = await createContractEWalletERC20Info(
+          ens.ens.address,
+          walletList[0])
         await (await contract.addERC20Token(ethers.constants.AddressZero, 'ETH', 'ether', 18)).wait()
         expect((await contract.getERC20TokenListLength()).toNumber()).toBe(0)
         await (await contract.addERC20Token(

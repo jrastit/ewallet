@@ -87,12 +87,6 @@ class LocalEntity extends Entity {
         props.memberName,
         props.deviceName,
       )
-      this.addLog(
-        0,
-        "Create entity",
-        "entity",
-        []
-      )
       this.save()
     } else if (
       props.balance &&

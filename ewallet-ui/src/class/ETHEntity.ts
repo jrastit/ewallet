@@ -10,9 +10,12 @@ import { ethers } from 'ethers'
 
 import {
   createWalletContract,
-  getWalletContract,
-  getMemberContract,
 } from '../contract/contractFactory'
+
+import {
+  getContractEWallet,
+  getContractEWalletMember,
+} from '../contract/solidity/compiled/contractAutoFactory'
 
 class ETHEntity extends LocalEntity {
 
@@ -63,7 +66,6 @@ class ETHEntity extends LocalEntity {
   addListener() {
     if (this.contract && this.contract.listenerCount("Operation") === 0) {
       this.contract.on("Operation", (memberId: number, from: string, to: string, tokenAddress: string, value: ethers.BigNumber, name: string, reason: string, extra: any) => {
-        console.log({ memberId, from, to, tokenAddress, value, name, reason, extra })
         this.addOperation(memberId, from, to, tokenAddress, value, name, reason, extra)
       })
     }
@@ -76,11 +78,17 @@ class ETHEntity extends LocalEntity {
     if (!this.contractAddress && !this.entityRegistry && this.name && this.memberName && this.deviceName) {
       this.contract = await createWalletContract(this.name, this.memberName, this.deviceName, this.signer)
       this.contractAddress = this.contract.address
-      this.contractMember = await getMemberContract(this.contract, this.signer);
+      this.contractMember = getContractEWalletMember(
+        await this.contract.memberContract(),
+        this.signer
+      );
       this.save()
     } else if (this.contractAddress) {
-      this.contract = await getWalletContract(this.contractAddress, this.signer)
-      this.contractMember = await getMemberContract(this.contract, this.signer);
+      this.contract = getContractEWallet(this.contractAddress, this.signer)
+      this.contractMember = getContractEWalletMember(
+        await this.contract.memberContract(),
+        this.signer
+      );
       await this.update()
     } else {
       throw new Error("Entity init fail")

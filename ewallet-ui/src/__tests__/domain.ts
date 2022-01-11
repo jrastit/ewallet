@@ -24,10 +24,13 @@ jest.setTimeout(500000)
 let walletList: ethers.Signer[]
 
 import {
-  createDomainContract,
   createDomainChainlinkContract,
-  getIERC677Contract
 } from '../contract/contractFactory'
+
+import {
+  createContractEWalletDomain,
+  getContractIERC677,
+} from '../contract/solidity/compiled/contractAutoFactory'
 
 const requestAndFullfilDomain = async (domainName: string, domainContract: ethers.Contract) => {
   const tx = await domainContract.requestDomainContract(domainName)
@@ -54,21 +57,7 @@ const fullfilDomain = async (domainName: string, requestId: string, domainContra
 }
 
 const testDomain = () => {
-  /*
-  let network: {
-    name: string
-    url: string
-    chainId: number
-    blockExplorerTxPrefix?: string
-    faucet?: string
-    entityRegistryAddress?: string
-    contractDomain?: {
-      linkAddress: string,
-      oracle: string,
-      jobId: string,
-    }
-  }
-  */
+
   let domainContract: ethers.Contract
   let linkContract: ethers.Contract
 
@@ -91,22 +80,21 @@ const testDomain = () => {
 
     it("domain contract", async () => {
       if (network.contractDomainChainlink) {
-        linkContract = await getIERC677Contract(
+        linkContract = getContractIERC677(
           network.contractDomainChainlink.linkAddress,
           walletList[0]
         )
         domainContract = await createDomainChainlinkContract(
-          walletList[0],
           await linkContract.getAddress(),
           network.contractDomainChainlink.oracle,
           network.contractDomainChainlink.jobId,
+          walletList[0],
         )
       } else {
-        domainContract = await createDomainContract(
-          walletList[0],
+        domainContract = await createContractEWalletDomain(
           await walletList[0].getAddress(),
+          walletList[0],
         )
-
       }
       expect(domainContract.address).not.toBeUndefined()
       //console.log("Domain Contract", domainContract.address)
