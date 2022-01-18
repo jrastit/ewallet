@@ -1,13 +1,8 @@
-import { BalanceType } from './balanceType'
-import { balanceToString, balanceFromString } from './balanceType'
 import { DeviceType } from './deviceType'
-
 
 type MemberType = {
   memberId: number,
   memberName: string,
-  balance: Array<BalanceType>,
-  allowance: Array<BalanceType>,
   device: Array<DeviceType>,
   role?: Array<{ name: string, value: boolean }>
   disable: boolean,
@@ -18,8 +13,6 @@ const memberToString = (member: MemberType) => {
     return {
       memberId: member.memberId,
       memberName: member.memberName,
-      balance: member.balance.map(balanceToString),
-      allowance: member.allowance.map(balanceToString),
       device: member.device,
       disable: member.disable,
       role: member.role,
@@ -32,8 +25,6 @@ const memberFromString = (member: any) => {
     return {
       memberId: member.memberId,
       memberName: member.memberName,
-      balance: member.balance.map(balanceFromString),
-      allowance: member.allowance.map(balanceFromString),
       device: member.device,
       disable: member.disable,
       role: member.role,

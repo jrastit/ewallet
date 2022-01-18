@@ -3,7 +3,10 @@ import { getWalletList, constant } from './testConfig'
 
 import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
 
+import { EthersEntity } from '../class/ethers/EthersEntity'
+
 import {
+  createContractEWalletENS,
   createContractEWalletERC20Info,
   createContractERC677,
 } from '../contract/solidity/compiled/contractAutoFactory'
@@ -63,8 +66,28 @@ const testERC20Info = () => {
           walletList[0],
         )
 
-        const contract = await createContractEWalletERC20Info(
+        const entity = new EthersEntity(undefined, undefined, {
+          signer: walletList[0]
+        })
+        await entity.newContract(
+          "myEntity",
+          "jr",
+          "pc"
+        )
+
+        await entity.init()
+        await entity.setRole(
+          await entity.getMemberIdFromAddress(await walletList[0].getAddress()),
+          true
+        )
+        const ensContract = await createContractEWalletENS(
+          entity.getContract(),
           ens.ens.address,
+          walletList[0],
+        )
+        await entity.addModuleRow(ensContract.address)
+        const contract = await createContractEWalletERC20Info(
+          entity.getContract(),
           walletList[0])
         await (await contract.addERC20Token(ethers.constants.AddressZero, 'ETH', 'ether', 18)).wait()
         expect((await contract.getERC20TokenListLength()).toNumber()).toBe(0)
@@ -117,7 +140,7 @@ const testERC20Info = () => {
         //const tx3 = await contract.addERC20Token("0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa", 'TEST', 'test')
         //console.log("tx2")
       } catch (e: any) {
-        console.error(e)
+        console.log(e)
         console.log(JSON.parse(e.error.body).error.message)
         expect(0).toBeTruthy()
       }

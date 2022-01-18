@@ -1,5 +1,3 @@
-import { ethers } from 'ethers'
-
 type TokenType = {
   name: string
   niceName: string

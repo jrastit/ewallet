@@ -46,6 +46,25 @@ const balanceAdd = (balance: Array<BalanceType>, balance2: Array<BalanceType>) =
   }
 }
 
+const balanceSet = (balance: Array<BalanceType>, balance2: Array<BalanceType>) => {
+  for (let i = 0; i < balance2.length; i++) {
+    let found = false
+    balance.filter(item => item.token === balance2[i].token).map(item => {
+      if (!found) {
+        found = true
+        item.balance = balance2[i].balance
+      }
+      return null
+    })
+    if (!found) {
+      balance.push({
+        token: balance2[i].token,
+        balance: balance2[i].balance,
+      })
+    }
+  }
+}
+
 const balanceSub = (balance: Array<BalanceType>, balance2: Array<BalanceType>) => {
   for (let i = 0; i < balance2.length; i++) {
     let found = false
@@ -71,7 +90,7 @@ const balanceGte = (balance: Array<BalanceType>, balance2: Array<BalanceType>) =
     balance.filter(
       item => item.token === balance2[i].token &&
         item.balance.gte(balance2[i].balance)
-    ).map(item => {
+    ).forEach(() => {
       if (!found) {
         found = true
       }
@@ -93,5 +112,6 @@ export {
   balanceToString, balanceFromString,
   balanceAdd,
   balanceSub,
+  balanceSet,
   balanceGte,
 }

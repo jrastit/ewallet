@@ -1,0 +1,254 @@
+{
+  "outputPath": "compiled/",
+  "outputCopyPath": "../ewallet-ui/src/contract/solidity/compiled",
+  "file": [
+    {
+      "contract": "ewallet/EWallet",
+      "arg": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "memberContract",
+          "type": "ethers.Contract"
+        },
+        {
+          "name": "moduleAdmin",
+          "type": "ethers.Contract"
+        }
+      ]
+    },
+    {
+      "contract": "ewallet/EWalletFactory"
+    },
+    {
+      "contract": "ewallet/EWalletRegistry",
+      "arg": [
+        {
+          "name": "moduleAdmin",
+          "type": "ethers.Contract"
+        }
+      ]
+    },
+    {
+      "contract": "modules/EWalletModuleAdmin",
+      "arg": [
+        {
+          "name": "eWalletFactory",
+          "type": "ethers.Contract"
+        },
+        {
+          "name": "memberFactory",
+          "type": "ethers.Contract"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "ownerName",
+          "type": "string"
+        },
+        {
+          "name": "ownerDeviceName",
+          "type": "string"
+        },
+        {
+          "name": "ownerAddress",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "type": "ethers.Contract"
+        }
+      ]
+    },
+    {
+      "contract": "modules/IEWalletModule"
+    },
+    {
+      "contract": "modules/domain/IEWalletDomain"
+    },
+    {
+      "contract": "modules/domain/EWalletDomain",
+      "arg": [
+        {
+          "name": "oracle",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "modules/domain/EWalletDomainChainlink",
+      "arg": [
+        {
+          "name": "linkAddress",
+          "type": "string"
+        },
+        {
+          "name": "oracle",
+          "type": "string"
+        },
+        {
+          "name": "jobId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "modules/ENS/EWalletENSFactory",
+      "arg": [
+        {
+          "name": "ensAddress",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "modules/ENS/EWalletENS",
+      "arg": [
+        {
+          "name": "eWalletContract",
+          "type": "ethers.Contract"
+        },
+        {
+          "name": "ensAddress",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "modules/ERC20Info/EWalletERC20InfoFactory"
+    },
+    {
+      "contract": "modules/ERC20Info/EWalletERC20Info",
+      "arg": [
+        {
+          "name": "eWalletContract",
+          "type": "ethers.Contract"
+        }
+      ]
+    },
+    {
+      "contract": "modules/member/EWalletMember",
+      "arg": [
+        {
+          "name": "memberName",
+          "type": "string"
+        },
+        {
+          "name": "deviceName",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "modules/member/EWalletMemberFactory"
+    },
+    {
+      "contract": "modules/wallet/EWalletWallet",
+      "arg": [
+        {
+          "name": "eWalletContract",
+          "type": "ethers.Contract"
+        }
+      ]
+    },
+    {
+      "contract": "modules/wallet/EWalletWalletFactory"
+    },
+    {
+      "contract": "util/EWalletChainlinkAggregator",
+      "arg": [
+        {
+          "name": "decimals",
+          "type": "ethers.BigNumber"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "ethers.BigNumber"
+        }
+      ]
+    },
+    {
+      "contract": "util/token/EWalletToken",
+      "arg": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "initialSupply",
+          "type": "ethers.BigNumber"
+        },
+        {
+          "name": "defaultOperators",
+          "type": "string[]"
+        }
+      ]
+    },
+    {
+      "contract": "util/token/ERC677",
+      "arg": [
+        {
+          "name": "initialAccount",
+          "type": "string"
+        },
+        {
+          "name": "initialBalance",
+          "type": "ethers.BigNumber"
+        },
+        {
+          "name": "tokenName",
+          "type": "string"
+        },
+        {
+          "name": "tokenSymbol",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "contract": "util/token/IERC677"
+    },
+    {
+      "contract": "@ensdomains/ens-contracts/contracts/registry/ENS",
+      "outputPath": "ENS/"
+    },
+    {
+      "contract": "@ensdomains/ens-contracts/contracts/registry/ENSRegistry",
+      "outputPath": "ENS/"
+    },
+    {
+      "contract": "@ensdomains/ens-contracts/contracts/resolvers/Resolver",
+      "outputPath": "ENS/"
+    },
+    {
+      "contract": "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver",
+      "arg": [
+        {
+          "name": "registry",
+          "type": "string"
+        },
+        {
+          "name": "wrapperAddress",
+          "type": "string"
+        }
+      ],
+      "outputPath": "ENS/"
+    }
+  ]
+}

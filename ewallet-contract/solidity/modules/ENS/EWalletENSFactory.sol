@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-import { EWalletERC20Info } from "./EWalletERC20Info.sol";
+import { EWalletENS } from "./EWalletENS.sol";
+import { IEWallet } from "../../ewallet/IEWallet.sol";
 
 /*
  * A contract to instanciate EWalletMember
  */
-contract EWalletERC20InfoFactory {
+contract EWalletENSFactory {
 
     address public ensAddress;
 
@@ -15,10 +16,10 @@ contract EWalletERC20InfoFactory {
       ensAddress = ensAddress_;
     }
 
-    function newEWalletERC20Info(
-
-    ) public returns (EWalletERC20Info){
-        return new EWalletERC20Info(ensAddress);
+    function newEWalletENS(
+      IEWallet _ewallet
+    ) public returns (EWalletENS){
+        return new EWalletENS(_ewallet, ensAddress);
     }
 
 }

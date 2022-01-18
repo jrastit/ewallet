@@ -40,15 +40,19 @@ Object.defineProperty(window, 'localStorage', {
   value: fakeLocalStorage,
 });
 
-import { ETHEntity } from '../class/ETHEntity'
-import { EntityRegistry } from '../class/EntityRegistry'
+import { EthersEntity } from '../class/ethers/EthersEntity'
+import { EthersMember } from '../class/ethers/EthersMember'
+import { EthersWallet } from '../class/ethers/EthersWallet'
+import { EthersEntityRegistry } from '../class/ethers/EthersEntityRegistry'
 
 
 const testWallet = () => {
 
   let walletList: ethers.Signer[]
-  let entityRegistry: EntityRegistry
-  let entity: ETHEntity
+  let entityRegistry: EthersEntityRegistry
+  let entity: EthersEntity
+  let memberModule: EthersMember
+  let walletModule: EthersWallet
   let memberId: number
 
   jest.setTimeout(600000)
@@ -60,24 +64,38 @@ const testWallet = () => {
         //console.log("balance", await provider.getBalance("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"))
 
         walletList = getWalletList()
-        entityRegistry = new EntityRegistry({
+        entityRegistry = new EthersEntityRegistry({
           signer: walletList[0],
-
           networkName,
         });
+        await entityRegistry.newContract("admin", "jr", "pc")
         await entityRegistry.init()
-        entity = new ETHEntity({
-          name: "test",
-          networkName,
-          signer: walletList[0],
-          memberName: "jr",
-          deviceName: "PC",
-          entityRegistry: entityRegistry,
-        })
-        await entity.init()
+        entity = await entityRegistry.createEntity("test", "jr", "pc")
+        console.log(entity.toStringObj())
         memberId = await entity.getMemberIdFromAddress(await walletList[0].getAddress())
+        memberModule = await entity.getMemberModule()
+
+        console.log("set role")
+        await entity.setRole(memberId, true)
+        console.log("create wallet")
+        await entity.addModuleWallet()
+        console.log("create ERC20")
+        await entity.addModuleERC20Info()
+        console.log("create ENS")
+        await entity.addModuleENS()
+        console.log("get module")
+        walletModule = await entity.getModuleWallet()
+        const erc20Info = await entity.getModuleERC20Info()
+        await erc20Info.setRole(memberId, true)
+        await erc20Info.addERC20Token(
+          ethers.constants.AddressZero,
+          'ETH',
+          'eth',
+          18
+        )
         done()
       } catch (error) {
+        console.error(error)
         done(error)
       }
     })
@@ -96,21 +114,21 @@ const testWallet = () => {
     })
     it('Entity add member', async () => {
       expect(entity.contractAddress).toBeTruthy()
-      await entity.addMember(await walletList[2].getAddress(), "jr2", "PC2")
-      await expect(entity.addMember(await walletList[2].getAddress(), "jr2", "PC2")).rejects.toThrow()
+      await memberModule.addMember(await walletList[2].getAddress(), "jr2", "PC2")
+      await expect(memberModule.addMember(await walletList[2].getAddress(), "jr2", "PC2")).rejects.toThrow()
     })
     it('Entity found', async () => {
-      expect(entity.contractAddress).toBeTruthy()
-      await entity.depositFund(memberId, "0.01", "eth")
-      await entity.update()
-      await entity.withdrawFund(memberId, "0.01", "eth")
+      expect(walletModule.contractAddress).toBeTruthy()
+      await walletModule.depositFund(memberId, "0.01", "eth")
+      await walletModule.withdrawFund(memberId, "0.01", "eth")
     })
     it('Entity allowance', async () => {
-      expect(entity.contractAddress).toBeTruthy()
-      await entity.setAllowance(memberId, "0.01", "eth")
-      await entity.setAllowance(memberId, "0", "eth")
-      await entity.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0.01", "eth")
-      await entity.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0", "eth")
+      expect(walletModule.contractAddress).toBeTruthy()
+      await walletModule.setRole(memberId, true)
+      await walletModule.setAllowance(memberId, "0.01", "eth")
+      await walletModule.setAllowance(memberId, "0", "eth")
+      await walletModule.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0.01", "eth")
+      await walletModule.setAllowance(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), "0", "eth")
     })
   })
 

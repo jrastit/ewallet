@@ -4,7 +4,7 @@ import { getWalletList, constant } from './testConfig'
 import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
 
 import {
-  createContractEWalletERC20Info
+  createContractEWalletENS
 } from '../contract/solidity/compiled/contractAutoFactory'
 
 const testENS = () => {
@@ -15,17 +15,13 @@ const testENS = () => {
 
   beforeAll(done => {
     const func_async = (async () => {
-
       try {
-        //console.log("balance", await provider.getBalance("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"))
-
         walletList = getWalletList()
         done()
       } catch (error) {
         done(error)
       }
     })
-
     func_async()
   })
 
@@ -45,7 +41,7 @@ const testENS = () => {
         await ens.name('eth-usd.data.eth').setAddress('ETH', constant.kovanDaiAddress)
         const address = await ens.name('eth-usd.data.eth').getAddress('ETH')
         expect(address).toBe(constant.kovanDaiAddress)
-        const contract = await createContractEWalletERC20Info(ens.ens.address, walletList[0])
+        const contract = await createContractEWalletENS({ address: ethers.constants.AddressZero }, ens.ens.address, walletList[0])
         const address2 = await contract.resolveENS(ENSHash('eth-usd.data.eth'))
         expect(address2).toBe(constant.kovanDaiAddress)
         //expect(await contract.getENSChainlinkUSD('ETH')).toBe(constant.kovanDaiAddress)

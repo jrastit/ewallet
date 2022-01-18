@@ -114,7 +114,7 @@ const compileInput = (contractConfig: any, outputPath: string, fileTs: FileTs) =
         fileTs.create.push(
           "export const createContract" + contractName + " = async (\n" +
           contractConfig.arg.map((arg: { name: string, type: string }) => {
-            return "\t" + arg.name + " : " + arg.type + ",\n"
+            return "\t" + arg.name + " : " + (arg.type === "ethers.Contract" ? "{address : string}" : arg.type) + ",\n"
           }).join("") +
           "\tsigner: ethers.Signer\n" +
           ") => {\n" +
@@ -178,158 +178,16 @@ const main = async () => {
     get: [],
   }
 
-  const outputPath = 'compiled/'
+  const defineSource = JSON.parse(fs.readFileSync("solidity/soliditySource.json").toString())
 
-  if (fs.existsSync(outputPath)) {
-    fs.rmSync(outputPath, { recursive: true })
+  if (fs.existsSync(defineSource.outputPath)) {
+    fs.rmSync(defineSource.outputPath, { recursive: true })
   }
-  fs.mkdirSync(outputPath)
-  const defineSource = {
-    file: [
-      { contract: "EWalletChainlinkAggregator" },
-      { contract: "EWalletERC20InfoFactory" },
-      {
-        contract: "EWalletERC20Info",
-        arg: [
-          {
-            name: "ensAddress",
-            type: "string"
-          }]
-      },
-      { contract: "IEWalletDomain" },
-      {
-        contract: "EWalletDomain",
-        arg: [
-          {
-            name: "oracle",
-            type: "string"
-          }
-        ]
-      },
-      {
-        contract: "EWalletDomainChainlink",
-        arg: [
-          {
-            name: "linkAddress",
-            type: "string"
-          }, {
-            name: "oracle",
-            type: "string"
-          }, {
-            name: "jobId",
-            type: "string"
-          }
-        ]
-      },
-      {
-        contract: "EWalletMember",
-        arg: [
-          {
-            name: "memberName",
-            type: "string"
-          }, {
-            name: "deviceName",
-            type: "string"
-          }
-        ]
-      },
-      { contract: "EWalletMemberFactory" },
-      {
-        contract: "EWallet",
-        arg: [
-          {
-            name: "name",
-            type: 'string'
-          }, {
-            name: "memberContract",
-            type: "ethers.Contract"
-          }
-        ]
-      },
-      {
-        contract: "EWalletFactory",
-        arg: [
-          {
-            name: "memberFactoryContract",
-            type: "ethers.Contract"
-          }
-        ]
-      },
-      {
-        contract: "EWalletRegistry",
-        arg: [
-          {
-            name: "eWalletFactoryContract",
-            type: "ethers.Contract"
-          }
-        ]
-      },
-      {
-        contract: "EWalletToken",
-        arg: [
-          {
-            name: "name",
-            type: "string"
-          }, {
-            name: "symbol",
-            type: "string"
-          }, {
-            name: "initialSupply",
-            type: "ethers.BigNumber"
-          }, {
-            name: "defaultOperators",
-            type: "string[]"
-          }
-        ]
-      },
-      {
-        contract: "ERC677",
-        arg: [
-          {
-            name: "initialAccount",
-            type: "string"
-          }, {
-            name: "initialBalance",
-            type: "ethers.BigNumber"
-          }, {
-            name: "tokenName",
-            type: "string"
-          }, {
-            name: "tokenSymbol",
-            type: "string"
-          }
-        ]
-      },
-      { contract: "IERC677" },
-      {
-        contract: "@ensdomains/ens-contracts/contracts/registry/ENS",
-        outputPath: "ENS/"
-      }, {
-        contract: "@ensdomains/ens-contracts/contracts/registry/ENSRegistry",
-        outputPath: "ENS/"
-      },
-      {
-        contract: "@ensdomains/ens-contracts/contracts/resolvers/Resolver",
-        outputPath: "ENS/"
-      },
-      {
-        contract: "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver",
-        arg: [
-          {
-            name: "registry",
-            type: "string"
-          },
-          {
-            name: "wrapperAddress",
-            type: "string"
-          }
-        ],
-        outputPath: "ENS/"
-      },
-    ]
-  }
+  fs.mkdirSync(defineSource.outputPath)
+
+
   defineSource.file.forEach((contractConfig: { contract: string, config?: any }) => {
-    compileInput(buildContractConfig(contractConfig), outputPath, fileTs)
+    compileInput(buildContractConfig(contractConfig), defineSource.outputPath, fileTs)
   })
 
   const fileTsOutput =
@@ -339,12 +197,12 @@ const main = async () => {
     fileTs.create.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.get.map((str: string) => str).join('\n') + "\n\n"
 
-  fs.writeFileSync(outputPath + "contractAutoFactory.ts", fileTsOutput)
+  fs.writeFileSync(defineSource.outputPath + "contractAutoFactory.ts", fileTsOutput)
 
-  fs.rmSync('../ewallet-ui/src/contract/solidity/' + outputPath, { recursive: true, force: true })
+  fs.rmSync(defineSource.outputCopyPath, { recursive: true, force: true })
 
   // To copy a folder or file
-  fse.copySync(outputPath, '../ewallet-ui/src/contract/solidity/' + outputPath)
+  fse.copySync(defineSource.outputPath, defineSource.outputCopyPath)
 
 }
 
