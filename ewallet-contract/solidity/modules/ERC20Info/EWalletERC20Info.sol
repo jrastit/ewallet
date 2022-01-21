@@ -203,7 +203,7 @@ contract EWalletERC20Info is IEWalletModule {
 
   modifier roleManageToken {
       uint16 memberId = ewallet.getMemberId(msg.sender);
-      require(roleList[memberId].manageToken);
+      require(roleList[memberId].manageToken, "not token manager");
       _;
   }
 

@@ -124,7 +124,7 @@ contract EWallet is IEWallet {
 
   modifier roleManageModule {
       if (address(moduleAdmin) != address(0)) {
-        require(address(moduleAdmin) == address(msg.sender));
+        require(address(moduleAdmin) == address(msg.sender), 'not module admin');
       } else {
         uint16 memberId = getMemberId(msg.sender);
         require(roleList[memberId].manageModule, "not module manager");

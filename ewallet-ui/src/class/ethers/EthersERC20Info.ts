@@ -4,11 +4,12 @@ import { TokenType } from '../../type/tokenType'
 
 import { ethers } from 'ethers'
 
-import { getSignerEntity, getContract } from '../../util/ethersGeneric'
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManagerEntity, getContract } from '../../util/ethersGeneric'
 
 import {
   getContractEWalletERC20Info,
-  createContractEWalletERC20Info
+  createWithManagerContractEWalletERC20Info
 } from '../../contract/solidity/compiled/contractAutoFactory'
 
 class EthersERC20Info extends LocalERC20Info {
@@ -25,13 +26,13 @@ class EthersERC20Info extends LocalERC20Info {
 
   contract: ethers.Contract | undefined
   contractAddress?: string
-  signer?: ethers.Signer
+  transactionManager?: TransactionManager
 
   constructor(
     entity?: EthersEntity,
     data?: LocalERC20InfoData,
     props?: {
-      signer?: ethers.Signer,
+      transactionManager?: TransactionManager,
       contractAddress?: string,
     }
   ) {
@@ -39,12 +40,12 @@ class EthersERC20Info extends LocalERC20Info {
     this.entity = entity
     if (props) {
       this.contractAddress = props.contractAddress
-      this.signer = props.signer
+      this.transactionManager = props.transactionManager
     }
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSignerEntity(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManagerEntity(this, transactionManager)
   }
 
   getContract() {
@@ -53,7 +54,7 @@ class EthersERC20Info extends LocalERC20Info {
 
   async newContract() {
     if (this.entity) {
-      this.contract = await createContractEWalletERC20Info(this.entity.getContract(), this.getSigner())
+      this.contract = await createWithManagerContractEWalletERC20Info(this.entity.getContract(), this.getTransactionManager())
       this.contractAddress = this.contract.address
     }
     return this
@@ -81,14 +82,28 @@ class EthersERC20Info extends LocalERC20Info {
   }
 
   async update() {
-    this.tokenList = [(await this.getContract().getERC20TokenList()).map(this.tokenChainToToken)]
-    this.tokenList.push(this.tokenChainToToken(await this.getContract().getMainToken()))
-    console.log(this.tokenList)
+    this.tokenList = (await this.getContract().getERC20TokenList()).map(this.tokenChainToToken)
+    const chainToken = await this.getContract().getMainToken()
+    if (chainToken.name) {
+      this.tokenList.push(this.tokenChainToToken(chainToken))
+    } else {
+      this.tokenList.push({
+        name: 'eth',
+        symbol: 'ETH',
+        decimal: 18,
+        niceName: 'eth',
+        contractAddress: ethers.constants.AddressZero,
+        networkName: '',
+      })
+    }
+    //console.log(this.tokenList)
   }
 
   async setRole(memberId: number, manageToken: boolean) {
-    const tx = await this.getContract().setRole(memberId, manageToken)
-    await tx.wait()
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.setRole(memberId, manageToken),
+      'Set Role'
+    )
   }
 
   async addERC20Token(
@@ -97,13 +112,15 @@ class EthersERC20Info extends LocalERC20Info {
     name: string,
     decimal: number,
   ) {
-    await this.getContract().addERC20Token(
-      tokenAddress,
-      symbol,
-      name,
-      decimal
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.addERC20Token(
+        tokenAddress,
+        symbol,
+        name,
+        decimal
+      ),
+      "Add ERC20 Token"
     )
-    await this.update()
   }
 
   toStringObj() {

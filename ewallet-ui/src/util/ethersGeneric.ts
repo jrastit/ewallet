@@ -2,66 +2,62 @@ import { ethers } from 'ethers'
 import { EthersEntity } from '../class/ethers/EthersEntity'
 import { EthersEntityRegistry } from '../class/ethers/EthersEntityRegistry'
 
+import { TransactionManager } from './TransactionManager'
+
 export const getContract = (
   item: {
     contract?: ethers.Contract
     contractAddress?: string
-    getSigner: (signer?: ethers.Signer) => ethers.Signer
+    getTransactionManager: (transactionManager?: TransactionManager) => TransactionManager
   },
   getContract: (constractAddress: string, signer: ethers.Signer) => ethers.Contract
 ): ethers.Contract => {
   if (item.contract) return item.contract
   if (item.contractAddress) {
-    item.contract = getContract(item.contractAddress, item.getSigner())
+    item.contract = getContract(item.contractAddress, item.getTransactionManager().signer)
     return item.contract
   }
   throw new Error("contract not found")
 }
 
-export const getSignerEntityRegistry = (
+export const getTransactionManagerEntityRegistry = (
   item: {
-    signer?: ethers.Signer
-    contract?: ethers.Contract
+    transactionManager?: TransactionManager
     entityRegistry?: EthersEntityRegistry
   },
-  signer?: ethers.Signer,
-): ethers.Signer => {
-  return getSigner(item, signer, () => {
-    if (item.entityRegistry ?.signer) return item.entityRegistry.signer
-    if (item.entityRegistry ?.contract) return item.entityRegistry.contract.signer
+  transactionManager?: TransactionManager,
+): TransactionManager => {
+  return getTransactionManager(item, transactionManager, () => {
+    if (item.entityRegistry ?.transactionManager) return item.entityRegistry.transactionManager
   })
 }
 
-export const getSignerEntity = (
+export const getTransactionManagerEntity = (
   item: {
-    signer?: ethers.Signer
-    contract?: ethers.Contract
+    transactionManager?: TransactionManager
     entity?: EthersEntity
   },
-  signer?: ethers.Signer,
-): ethers.Signer => {
-  return getSigner(item, signer, () => {
-    if (item.entity ?.signer) return item.entity.signer
-    if (item.entity ?.contract) return item.entity.contract.signer
-    if (item.entity ?.entityRegistry ?.signer) return item.entity.entityRegistry.signer
-    if (item.entity ?.entityRegistry ?.contract) return item.entity.entityRegistry.contract.signer
+  transactionManager?: TransactionManager,
+): TransactionManager => {
+  return getTransactionManager(item, transactionManager, () => {
+    if (item.entity ?.transactionManager) return item.entity.transactionManager
+    if (item.entity ?.entityRegistry ?.transactionManager) return item.entity.entityRegistry.transactionManager
   })
 }
 
-export const getSigner = (
+export const getTransactionManager = (
   item: {
-    signer?: ethers.Signer
+    transactionManager?: TransactionManager
     contract?: ethers.Contract
   },
-  signer?: ethers.Signer,
-  getOtherSigner?: () => ethers.Signer | undefined
-): ethers.Signer => {
-  if (signer) return signer
-  if (item.signer) return item.signer
-  if (item.contract ?.signer) return item.contract.signer
+  transactionManager?: TransactionManager,
+  getOtherSigner?: () => TransactionManager | undefined
+): TransactionManager => {
+  if (transactionManager) return transactionManager
+  if (item.transactionManager) return item.transactionManager
   if (getOtherSigner) {
-    const signer = getOtherSigner()
-    if (signer) return signer
+    const transactionManager = getOtherSigner()
+    if (transactionManager) return transactionManager
   }
-  throw new Error("signer not found")
+  throw new Error("transactionManager not found")
 }

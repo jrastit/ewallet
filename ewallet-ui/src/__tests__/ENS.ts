@@ -1,5 +1,5 @@
 import * as ethers from 'ethers'
-import { getWalletList, constant } from './testConfig'
+import { getWalletList, constant } from '../__test_util__/testConfig'
 
 import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
 

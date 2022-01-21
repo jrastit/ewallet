@@ -1,6 +1,6 @@
 import * as ethers from 'ethers'
 import axios from 'axios'
-import { network, getWalletList } from './testConfig'
+import { network, getWalletList } from '../__test_util__/testConfig'
 
 
 jest.mock('../contract/contractResource', () => {

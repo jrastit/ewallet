@@ -1,16 +1,18 @@
 import { ethers } from 'ethers'
 
+import { TransactionManager } from '../util/TransactionManager'
+
 import {
-  createContractEWalletMemberFactory,
-  createContractEWalletFactory,
-  createContractEWalletWalletFactory,
-  createContractEWalletERC20InfoFactory,
-  createContractEWalletENSFactory,
-  createContractEWalletRegistry,
-  createContractEWalletMember,
-  createContractEWallet,
-  createContractEWalletDomainChainlink,
-  createContractEWalletModuleAdmin,
+  createWithManagerContractEWalletMemberFactory,
+  createWithManagerContractEWalletFactory,
+  createWithManagerContractEWalletWalletFactory,
+  createWithManagerContractEWalletERC20InfoFactory,
+  createWithManagerContractEWalletENSFactory,
+  createWithManagerContractEWalletRegistry,
+  createWithManagerContractEWalletMember,
+  createWithManagerContractEWallet,
+  createWithManagerContractEWalletDomainChainlink,
+  createWithManagerContractEWalletModuleAdmin,
   getContractEWallet,
   getContractEWalletModuleAdmin,
 } from './solidity/compiled/contractAutoFactory'
@@ -20,15 +22,19 @@ export const createRegistryContract = async (
   ownerName: string,
   ownerDeviceName: string,
   ownerAddress: string,
-  signer: ethers.Signer
+  transactionManager: TransactionManager
 ) => {
-  console.log("Create ewallet factory")
-  const eWalletFactoryContract = await createContractEWalletFactory(signer)
-  console.log("Create ewallet member factory")
-  const eWalletMemberFactoryContract = await createContractEWalletMemberFactory(signer)
-  const eWalletContract = getContractEWallet(ethers.constants.AddressZero, signer)
-  console.log("Create ewallet module admin")
-  const eWalletModuleAdmin = await createContractEWalletModuleAdmin(
+  const eWalletFactoryContract = await createWithManagerContractEWalletFactory(
+    transactionManager
+  )
+  const eWalletMemberFactoryContract = await createWithManagerContractEWalletMemberFactory(
+    transactionManager
+  )
+  const eWalletContract = getContractEWallet(
+    ethers.constants.AddressZero,
+    transactionManager.signer
+  )
+  const eWalletModuleAdmin = await createWithManagerContractEWalletModuleAdmin(
     eWalletFactoryContract,
     eWalletMemberFactoryContract,
     name,
@@ -36,35 +42,52 @@ export const createRegistryContract = async (
     ownerDeviceName,
     ownerAddress,
     eWalletContract,
-    signer
+    transactionManager
   )
-  console.log("create eWalletWalletFactory")
-  const eWalletWalletFactoryContract = await createContractEWalletWalletFactory(signer)
-  {
-    console.log("register eWalletWalletFactory")
-    const tx = await eWalletModuleAdmin.setEWalletWalletFactory(eWalletWalletFactoryContract.address)
-    await tx.wait()
-  }
-  console.log("create eWalletERC20InfoFactory")
-  const eWalletERC20InfoFactoryContract = await createContractEWalletERC20InfoFactory(signer)
-  {
-    console.log("register eWalletFactory")
-    const tx = await eWalletModuleAdmin.setEWalletERC20InfoFactory(eWalletERC20InfoFactoryContract.address)
-    await tx.wait()
-  }
-  console.log("create eWalletENSFactory")
-  const eWalletENSFactoryContract = await createContractEWalletENSFactory(ethers.constants.AddressZero, signer)
-  {
-    console.log("register eWalletFactory")
-    const tx = await eWalletModuleAdmin.setEWalletENSFactory(eWalletENSFactoryContract.address)
-    await tx.wait()
-  }
+  const eWalletWalletFactoryContract = await createWithManagerContractEWalletWalletFactory(
+    transactionManager
+  )
 
-  console.log("Create ewallet registry")
-  const eWalletRegistryContract = await createContractEWalletRegistry(eWalletModuleAdmin, signer)
-  console.log("set registry in admin")
-  const tx = await eWalletModuleAdmin.setEWalletRegistry(eWalletRegistryContract.address)
-  await tx.wait()
+  await transactionManager.sendTx(
+    await eWalletModuleAdmin.populateTransaction.setEWalletWalletFactory(
+      eWalletWalletFactoryContract.address
+    ),
+    'Set EWallet Wallet factory'
+  )
+
+  const eWalletERC20InfoFactoryContract = await createWithManagerContractEWalletERC20InfoFactory(
+    transactionManager
+  )
+
+  await transactionManager.sendTx(
+    await eWalletModuleAdmin.populateTransaction.setEWalletERC20InfoFactory(
+      eWalletERC20InfoFactoryContract.address
+    ),
+    'Set EWallet ERC20Info factory'
+  )
+
+  const eWalletENSFactoryContract = await createWithManagerContractEWalletENSFactory(
+    ethers.constants.AddressZero,
+    transactionManager
+  )
+
+  await transactionManager.sendTx(
+    await eWalletModuleAdmin.populateTransaction.setEWalletENSFactory(
+      eWalletENSFactoryContract.address
+    ),
+    'Set EWallet ENS factory'
+  )
+
+  const eWalletRegistryContract = await createWithManagerContractEWalletRegistry(
+    eWalletModuleAdmin,
+    transactionManager
+  )
+  await transactionManager.sendTx(
+    await eWalletModuleAdmin.populateTransaction.setEWalletRegistry(
+      eWalletRegistryContract.address
+    ),
+    'Set EWallet Registry'
+  )
   return eWalletRegistryContract
 }
 
@@ -72,28 +95,36 @@ export const createWalletContract = async (
   name: string,
   memberName: string,
   deviceName: string,
-  signer: ethers.Signer
+  transactionManager: TransactionManager
 ) => {
-  const memberContract = await createContractEWalletMember(
+  const memberContract = await createWithManagerContractEWalletMember(
     memberName,
     deviceName,
-    await signer.getAddress(),
-    signer
+    await transactionManager.getAddress(),
+    transactionManager
   )
-  const moduleAdmin = getContractEWalletModuleAdmin(ethers.constants.AddressZero, signer)
-  return await createContractEWallet(name, memberContract, moduleAdmin, signer)
+  const moduleAdmin = getContractEWalletModuleAdmin(
+    ethers.constants.AddressZero,
+    transactionManager.signer
+  )
+  return await createWithManagerContractEWallet(
+    name,
+    memberContract,
+    moduleAdmin,
+    transactionManager
+  )
 }
 
 export const createDomainChainlinkContract = async (
   linkAddress: string,
   oracle: string,
   jobId: string,
-  signer: ethers.Signer
+  transactionManager: TransactionManager
 ) => {
-  return await createContractEWalletDomainChainlink(
+  return await createWithManagerContractEWalletDomainChainlink(
     linkAddress,
     oracle,
     jobId.replace(/-/g, ''),
-    signer
+    transactionManager
   )
 }

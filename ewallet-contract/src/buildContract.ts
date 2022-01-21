@@ -8,6 +8,7 @@ interface FileTs {
   import: string[],
   abi: string[],
   create: string[],
+  createWithManager: string[],
   get: string[],
 }
 
@@ -131,6 +132,28 @@ const compileInput = (contractConfig: any, outputPath: string, fileTs: FileTs) =
           "\tawait contract.deployed()\n" +
           "\treturn contract\n" +
           "}\n")
+        fileTs.createWithManager.push(
+          "export const createWithManagerContract" + contractName + " = async (\n" +
+          contractConfig.arg.map((arg: { name: string, type: string }) => {
+            return "\t" + arg.name + " : " + (arg.type === "ethers.Contract" ? "{address : string}" : arg.type) + ",\n"
+          }).join("") +
+          "\ttransactionManager: TransactionManager\n" +
+          ") => {\n" +
+          "\tconst factory = new ethers.ContractFactory(\n" +
+          "\t\tjson" + contractName + ".abi,\n" +
+          "\t\tjson" + contractName + ".bytecode,\n" +
+          "\t)\n" +
+          "\tconst utx = factory.getDeployTransaction(\n" +
+          contractConfig.arg.map((arg: { name: string, type: string }) => {
+            return "\t\t" + arg.name + (arg.type === "ethers.Contract" ? ".address" : "") + ",\n"
+          }).join("") +
+          "\t)\n" +
+          "\treturn await transactionManager.sendContractTx(\n" +
+          "\t\tutx,\n" +
+          "\t\tgetContract" + contractName + ",\n" +
+          "\t\t 'Create contract " + contractName + "',\n" +
+          "\t)\n" +
+          "}\n")
       }
       fileTs.get.push(
         "export const getContract" + contractName + " = (\n" +
@@ -171,10 +194,14 @@ const buildContractConfig = (contractConfig: { contract: string, input?: any }) 
 const main = async () => {
 
   const fileTs = {
-    header: ["import { ethers } from 'ethers'"],
+    header: [
+      "import { ethers } from 'ethers'",
+      "import { TransactionManager } from '../../../util/TransactionManager'"
+    ],
     import: [],
     abi: [],
     create: [],
+    createWithManager: [],
     get: [],
   }
 
@@ -195,6 +222,7 @@ const main = async () => {
     fileTs.import.map((str: string) => str).join('\n') + "\n\n" +
     //fileTs.abi.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.create.map((str: string) => str).join('\n') + "\n\n" +
+    fileTs.createWithManager.map((str: string) => str).join('\n') + "\n\n" +
     fileTs.get.map((str: string) => str).join('\n') + "\n\n"
 
   fs.writeFileSync(defineSource.outputPath + "contractAutoFactory.ts", fileTsOutput)

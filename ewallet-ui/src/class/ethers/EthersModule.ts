@@ -2,7 +2,9 @@ import { getContractIEWalletModule } from '../../contract/solidity/compiled/cont
 import { LocalModule, LocalModuleData } from '../local/LocalModule'
 import * as ethers from 'ethers'
 import { EthersEntity } from './EthersEntity'
-import { getSignerEntity, getContract } from '../../util/ethersGeneric'
+
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManagerEntity, getContract } from '../../util/ethersGeneric'
 
 class EthersModule extends LocalModule {
 
@@ -10,13 +12,13 @@ class EthersModule extends LocalModule {
 
   contract?: ethers.Contract
   contractAddress?: string
-  signer?: ethers.Signer
+  transactionManager?: TransactionManager
 
   constructor(
     entity?: EthersEntity,
     data?: LocalModuleData,
     props?: {
-      signer?: ethers.Signer,
+      transactionManager?: TransactionManager,
       contractAddress?: string,
     }
   ) {
@@ -26,13 +28,13 @@ class EthersModule extends LocalModule {
     )
     this.entity = entity
     if (props) {
-      this.signer = props.signer
+      this.transactionManager = props.transactionManager
       this.contractAddress = props.contractAddress
     }
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSignerEntity(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManagerEntity(this, transactionManager)
   }
 
   getContract() {

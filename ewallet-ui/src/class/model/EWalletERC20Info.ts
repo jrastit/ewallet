@@ -18,7 +18,8 @@ class EWalletERC20Info extends EWalletModule {
     tokenName: string
   ): Promise<TokenType> {
     if (this.getTokenList) {
-      const token = (await this.getTokenList()).filter(token => token.name === tokenName)
+      const tokenList = await this.getTokenList()
+      const token = tokenList.filter(token => token.name === tokenName)
       if (token.length === 1) {
         return token[0]
       }
@@ -30,16 +31,19 @@ class EWalletERC20Info extends EWalletModule {
     contractAddress: string
   ): Promise<TokenType> {
     if (this.getTokenList) {
-      console.log(await this.getTokenList())
-      const token = (await this.getTokenList()).filter(token => token.contractAddress === contractAddress)
+      const tokenList = await this.getTokenList()
+      const token = tokenList.filter(token => {
+        console.log(token.contractAddress === contractAddress)
+        return token.contractAddress === contractAddress
+      })
       if (token.length === 1) {
         return token[0]
       }
     }
-    throw new Error("Token not found '" + contractAddress + "'")
+    throw new Error("Token address not found '" + contractAddress + "'")
   }
 
-  async getTokenList?(
+  getTokenList?(
 
   ): Promise<TokenType[]>
 

@@ -10,7 +10,8 @@ import { EthersModuleAdmin } from './EthersModuleAdmin'
 
 import { ethers } from 'ethers'
 
-import { getSignerEntityRegistry, getContract } from '../../util/ethersGeneric'
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManagerEntityRegistry, getContract } from '../../util/ethersGeneric'
 
 import {
   createWalletContract,
@@ -25,7 +26,7 @@ class EthersEntity extends LocalEntity {
   networkName?: string
   contract?: ethers.Contract
   contractAddress?: string
-  signer?: ethers.Signer
+  transactionManager?: TransactionManager
   moduleAdminAddress?: string
   moduleAdmin?: EthersModuleAdmin
 
@@ -36,7 +37,7 @@ class EthersEntity extends LocalEntity {
     data?: LocalEntityData,
     props?: {
       networkName?: string,
-      signer?: ethers.Signer,
+      transactionManager?: TransactionManager,
       contractAddress?: string,
     }
   ) {
@@ -47,13 +48,13 @@ class EthersEntity extends LocalEntity {
     this.entityRegistry = entityRegistry
     if (props) {
       this.contractAddress = props.contractAddress
-      this.signer = props.signer
+      this.transactionManager = props.transactionManager
       this.networkName = props.networkName
     }
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSignerEntityRegistry(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManagerEntityRegistry(this, transactionManager)
   }
 
   getContract() {
@@ -66,7 +67,7 @@ class EthersEntity extends LocalEntity {
   }
 
   async newContract(name: string, memberName: string, deviceName: string) {
-    this.contract = await createWalletContract(name, memberName, deviceName, this.getSigner())
+    this.contract = await createWalletContract(name, memberName, deviceName, this.getTransactionManager())
     this.contractAddress = this.contract.address
     return this
   }
@@ -113,15 +114,18 @@ class EthersEntity extends LocalEntity {
   async addModule(module: EWalletModule & { contract: ethers.Contract | undefined }) {
     await super.addModule(module)
     if (module.contract) {
-      console.log(module.getModuleName())
-      const tx = await (this.getContract().addModule(module.contract.address))
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await (this.getContract().populateTransaction.addModule(module.contract.address)),
+        'add module'
+      )
     }
   }
 
-  async addModuleRow(address: string) {
-    const tx = await (this.getContract().addModule(address))
-    await tx.wait()
+  async addModuleRaw(address: string) {
+    await this.getTransactionManager().sendTx(
+      await (this.getContract().populateTransaction.addModule(address)),
+      'add module raw'
+    )
     await this.update()
   }
 
@@ -165,8 +169,10 @@ class EthersEntity extends LocalEntity {
   }
 
   async setRole(memberId: number, moduleManager: boolean) {
-    const tx = await this.getContract().setRole(memberId, moduleManager)
-    await tx.wait()
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.setRole(memberId, moduleManager),
+      "set role"
+    )
   }
 
   async update() {
@@ -191,7 +197,7 @@ class EthersEntity extends LocalEntity {
       } else if (this.entityRegistry && this.entityRegistry ?.moduleAdmin ?.contractAddress == moduleAdminAddress) {
         this.moduleAdmin = this.entityRegistry.moduleAdmin
       } else {
-        this.moduleAdmin = new EthersModuleAdmin(this.entityRegistry, { signer: this.getSigner(), contractAddress: moduleAdminAddress })
+        this.moduleAdmin = new EthersModuleAdmin(this.entityRegistry, { transactionManager: this.getTransactionManager(), contractAddress: moduleAdminAddress })
         await this.moduleAdmin.init()
       }
     }

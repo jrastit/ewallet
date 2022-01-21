@@ -32,6 +32,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:sync": "react-scripts test --runInBand",
     "eject": "react-scripts eject",
     "ganache": "npx ganache-cli -a 10 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8000000 --port 8545 -i 1234 --networkId 1234",
     "ganache-slow": "npx ganache-cli -a 10 -b 1 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8000000 --port 8545 -i 1234 --networkId 1234"

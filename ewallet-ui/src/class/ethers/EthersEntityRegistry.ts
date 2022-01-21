@@ -13,19 +13,20 @@ import { EthersEntity } from '../ethers/EthersEntity'
 import { EthersModuleAdmin } from '../ethers/EthersModuleAdmin'
 import { LocalEntityRegistry, AddEntityToList } from '../local/LocalEntityRegistry'
 
-import { getSigner, getContract } from '../../util/ethersGeneric'
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManager, getContract } from '../../util/ethersGeneric'
 
 class EthersEntityRegistry extends LocalEntityRegistry {
 
   contractAddress?: string
-  signer: ethers.Signer
+  transactionManager: TransactionManager
   contract?: ethers.Contract
   networkName: string
   moduleAdmin?: EthersModuleAdmin
 
   constructor(
     props: {
-      signer: ethers.Signer,
+      transactionManager: TransactionManager,
       contractAddress?: string,
       networkName: string,
       addEntityToList?: AddEntityToList
@@ -33,12 +34,12 @@ class EthersEntityRegistry extends LocalEntityRegistry {
   ) {
     super(props)
     this.contractAddress = props.contractAddress
-    this.signer = props.signer
+    this.transactionManager = props.transactionManager
     this.networkName = props.networkName
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSigner(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManager(this, transactionManager)
   }
 
   getContract() {
@@ -60,8 +61,8 @@ class EthersEntityRegistry extends LocalEntityRegistry {
       adminEntityName,
       adminEntityManagerName,
       adminEntityDeviceName,
-      await this.signer.getAddress(),
-      this.signer
+      await this.transactionManager.signer.getAddress(),
+      this.transactionManager
     )
     this.contractAddress = this.contract.address
   }
@@ -81,7 +82,7 @@ class EthersEntityRegistry extends LocalEntityRegistry {
     console.log("Entity registry update")
     const entityListChain = await this.getContract().getEntityList()
     entityListChain.map(async (address: string) => {
-      const contract = getContractEWallet(address, this.signer)
+      const contract = getContractEWallet(address, this.transactionManager.signer)
       const name = await contract.name()
       if (this.addEntityToList) {
         this.addEntityToList(this, name, address)
@@ -103,7 +104,7 @@ class EthersEntityRegistry extends LocalEntityRegistry {
       undefined,
       {
         networkName: this.networkName,
-        signer: this.signer,
+        transactionManager: this.transactionManager,
         contractAddress: address,
       })
     await entity.init()

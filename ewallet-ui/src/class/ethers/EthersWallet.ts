@@ -3,11 +3,12 @@ import { EthersEntity } from './EthersEntity'
 
 import { ethers } from 'ethers'
 
-import { getSignerEntity, getContract } from '../../util/ethersGeneric'
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManagerEntity, getContract } from '../../util/ethersGeneric'
 
 import {
   getContractEWalletWallet,
-  createContractEWalletWallet,
+  createWithManagerContractEWalletWallet,
 } from '../../contract/solidity/compiled/contractAutoFactory'
 
 export class EthersWallet extends LocalWallet {
@@ -24,13 +25,13 @@ export class EthersWallet extends LocalWallet {
 
   contract: ethers.Contract | undefined
   contractAddress?: string
-  signer?: ethers.Signer
+  transactionManager?: TransactionManager
 
   constructor(
     entity?: EthersEntity,
     data?: LocalWalletData,
     props?: {
-      signer?: ethers.Signer,
+      transactionManager?: TransactionManager,
       contractAddress?: string,
     }
   ) {
@@ -40,13 +41,13 @@ export class EthersWallet extends LocalWallet {
     )
     this.entity = entity
     if (props) {
-      this.signer = props.signer
+      this.transactionManager = props.transactionManager
       this.contractAddress = props.contractAddress
     }
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSignerEntity(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManagerEntity(this, transactionManager)
   }
 
   getContract() {
@@ -68,9 +69,9 @@ export class EthersWallet extends LocalWallet {
     }
   }
 
-  async newContract(signer?: ethers.Signer) {
+  async newContract(transactionManager?: TransactionManager) {
     if (this.entity && this.entity.contract) {
-      this.contract = await createContractEWalletWallet(this.entity.contract, this.getSigner(signer))
+      this.contract = await createWithManagerContractEWalletWallet(this.entity.contract, this.getTransactionManager(transactionManager))
       this.contractAddress = this.contract.address
     }
     return this
@@ -84,7 +85,7 @@ export class EthersWallet extends LocalWallet {
   }
 
   async updateBalance() {
-    const provider = this.getSigner().provider
+    const provider = this.getTransactionManager().signer.provider
     if (provider && this.contractAddress) {
       const ethBalance = await provider.getBalance(this.contractAddress)
       return [{
@@ -179,8 +180,12 @@ export class EthersWallet extends LocalWallet {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
-      const tx = await this.getContract().depositETH({ value: amountBN })
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.depositETH(
+          { value: amountBN }
+        ),
+        'deposit eth'
+      )
     }
     await this.update()
     return operationList
@@ -200,16 +205,23 @@ export class EthersWallet extends LocalWallet {
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
 
     if (token.name === 'eth') {
-      const tx = await this.getContract().withdrawETH(amountBN)
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.withdrawETH(amountBN),
+        'Withdraw eth'
+      )
     }
     await this.update()
     return operationList
   }
 
   async setRole(memberId: number, allowanceManager: boolean) {
-    const tx = await this.getContract().setRole(memberId, allowanceManager)
-    await tx.wait()
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.setRole(
+        memberId,
+        allowanceManager
+      ),
+      'set role'
+    )
   }
 
   async setAllowance(
@@ -225,8 +237,10 @@ export class EthersWallet extends LocalWallet {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
-      const tx = await this.getContract().allowanceETH(amountBN, memberId)
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.allowanceETH(amountBN, memberId),
+        'set Allowance'
+      )
     }
     await this.update()
   }
@@ -250,8 +264,10 @@ export class EthersWallet extends LocalWallet {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
-      const tx = await this.getContract().sendETH(to, amountBN, name, reason)
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.sendETH(to, amountBN, name, reason),
+        'Send ETH'
+      )
     }
     this.update()
     return operationList
@@ -276,8 +292,10 @@ export class EthersWallet extends LocalWallet {
     const token = await this.getToken(tokenName)
     const amountBN = ethers.utils.parseUnits(amount, token.decimal)
     if (token.name === 'eth') {
-      const tx = await this.getContract().sendETHToApprove(to, amountBN, name, reason)
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.sendETHToApprove(to, amountBN, name, reason),
+        'send eth to approve'
+      )
     }
     this.update()
   }
@@ -301,8 +319,14 @@ export class EthersWallet extends LocalWallet {
       reason,
     )
     if (token.name === 'eth') {
-      const tx = await this.getContract().receiveETH(name, reason, { value: amountBN })
-      await tx.wait()
+      await this.getTransactionManager().sendTx(
+        await this.getContract().populateTransaction.receiveETH(
+          name,
+          reason,
+          { value: amountBN }
+        ),
+        'Receive ETH'
+      )
     }
     this.update()
     return operationList

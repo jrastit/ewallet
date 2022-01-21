@@ -1,6 +1,7 @@
 import * as ethers from 'ethers'
 const networkName = "ganache"
 
+import { TransactionManager } from '../util/TransactionManager'
 
 import { network as networkList } from '../config/network.json'
 import { NetworkType } from '../type/networkType'
@@ -11,10 +12,14 @@ let privateKeys = require("../../key/" + networkName + "PrivateKeys.json")
 const url = network.url
 const provider = new ethers.providers.JsonRpcProvider(url)
 
-const getWalletList = () => {
+const getWalletList = (): ethers.Signer[] => {
   return privateKeys.map((pk: string): ethers.Signer => {
     return new ethers.Wallet(pk, provider)
   })
+}
+
+const getTransactionManegerList = () => {
+  return getWalletList().map((signer: ethers.Signer): TransactionManager => new TransactionManager(signer))
 }
 
 const constant = {
@@ -29,4 +34,4 @@ const constant = {
 }
 
 
-export { network, networkName, provider, privateKeys, getWalletList, constant }
+export { network, networkName, provider, privateKeys, getWalletList, getTransactionManegerList, constant }

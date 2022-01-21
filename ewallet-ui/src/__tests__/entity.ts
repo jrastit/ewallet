@@ -6,8 +6,10 @@ import { LocalERC20Info } from '../class/local/LocalERC20Info'
 import { EthersEntity } from '../class/ethers/EthersEntity'
 import { EthersWallet } from '../class/ethers/EthersWallet'
 import { EthersERC20Info } from '../class/ethers/EthersERC20Info'
-import * as ethers from 'ethers'
-import { getWalletList, networkName } from './testConfig'
+import { getTransactionManegerList, networkName } from '../__test_util__/testConfig'
+import { TransactionManager } from '../util/TransactionManager'
+
+
 
 const testEntity = () => {
   describe('Local Entity', () => {
@@ -30,11 +32,11 @@ const testEntity = () => {
   })
 
   describe('Ethers entity', () => {
-    let walletList: ethers.Signer[]
+    let transactionManagerList: TransactionManager[]
     beforeAll(done => {
       const func_async = (async () => {
         try {
-          walletList = getWalletList()
+          transactionManagerList = getTransactionManegerList()
           done()
         } catch (error) {
           done(error)
@@ -46,14 +48,14 @@ const testEntity = () => {
     it('Ethers Entity', async () => {
       const entity = new EthersEntity(undefined, undefined, {
         networkName,
-        signer: walletList[0]
+        transactionManager: transactionManagerList[0]
       })
       await entity.newContract("ethersEntity", "tester", "pctest")
       await entity.init()
-      await entity.setRole(await entity.getMemberIdFromAddress(await walletList[0].getAddress()), true)
+      await entity.setRole(await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress()), true)
 
       const wallet = new EthersWallet(entity, undefined, {
-        signer: walletList[0]
+        transactionManager: transactionManagerList[0]
       })
       await wallet.newContract()
       await wallet.init()
@@ -61,7 +63,7 @@ const testEntity = () => {
       await entity.addModule(wallet)
 
       const eRC20Info = new EthersERC20Info(entity, undefined, {
-        signer: walletList[0]
+        transactionManager: transactionManagerList[0]
       })
       await eRC20Info.newContract()
       await entity.addModule(eRC20Info)

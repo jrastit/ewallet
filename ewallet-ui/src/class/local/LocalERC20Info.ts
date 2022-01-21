@@ -63,6 +63,7 @@ export class LocalERC20Info extends EWalletERC20Info {
   }
 
   async getTokenList(): Promise<TokenType[]> {
+    //console.log('getTokenList')
     return this.tokenList
   }
 

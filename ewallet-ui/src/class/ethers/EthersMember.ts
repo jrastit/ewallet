@@ -4,7 +4,8 @@ import { EthersEntity } from './EthersEntity'
 import { MemberType } from '../../type/memberType'
 import { DeviceType } from '../../type/deviceType'
 
-import { getSignerEntity, getContract } from '../../util/ethersGeneric'
+import { TransactionManager } from '../../util/TransactionManager'
+import { getTransactionManagerEntity, getContract } from '../../util/ethersGeneric'
 
 import { ethers } from 'ethers'
 
@@ -26,13 +27,13 @@ export class EthersMember extends LocalMember {
 
   contract?: ethers.Contract
   contractAddress?: string
-  signer?: ethers.Signer
+  transactionManager?: TransactionManager
 
   constructor(
     entity?: EthersEntity,
     data?: LocalMemberData,
     props?: {
-      signer?: ethers.Signer,
+      transactionManager?: TransactionManager,
       contractAddress?: string,
     }
   ) {
@@ -42,13 +43,13 @@ export class EthersMember extends LocalMember {
     )
     this.entity = entity
     if (props) {
-      this.signer = props.signer
+      this.transactionManager = props.transactionManager
       this.contractAddress = props.contractAddress
     }
   }
 
-  getSigner(signer?: ethers.Signer) {
-    return getSignerEntity(this, signer)
+  getTransactionManager(transactionManager?: TransactionManager) {
+    return getTransactionManagerEntity(this, transactionManager)
   }
 
   getContract() {
@@ -151,10 +152,13 @@ export class EthersMember extends LocalMember {
       memberName,
       deviceName
     )
-    await this.getContract().addMember(
-      memberName,
-      deviceName,
-      memberWallet
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.addMember(
+        memberName,
+        deviceName,
+        memberWallet
+      ),
+      'add memeber'
     )
   }
 
@@ -168,9 +172,12 @@ export class EthersMember extends LocalMember {
       name,
       address,
     )
-    await this.getContract().addSelfDevice(
-      name,
-      address
+    await this.getTransactionManager().sendTx(
+      await this.getContract().populateTransaction.addSelfDevice(
+        name,
+        address
+      ),
+      'add self device'
     )
   }
 
