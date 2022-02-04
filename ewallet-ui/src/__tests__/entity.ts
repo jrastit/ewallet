@@ -1,11 +1,11 @@
-import { LocalEntity } from '../class/local/LocalEntity'
-import { LocalMember } from '../class/local/LocalMember'
-import { LocalWallet } from '../class/local/LocalWallet'
-import { LocalERC20Info } from '../class/local/LocalERC20Info'
+import { LocalEntity } from '../contract/local/LocalEntity'
+import { LocalMember } from '../module/member/contract/LocalMember'
+import { LocalWallet } from '../module/wallet/contract/LocalWallet'
+import { LocalERC20Info } from '../module/erc20Info/contract/LocalERC20Info'
 
-import { EthersEntity } from '../class/ethers/EthersEntity'
-import { EthersWallet } from '../class/ethers/EthersWallet'
-import { EthersERC20Info } from '../class/ethers/EthersERC20Info'
+import { EthersEntity } from '../contract/ethers/EthersEntity'
+import { EthersWallet } from '../module/wallet/contract/EthersWallet'
+import { EthersERC20Info } from '../module/erc20Info/contract/EthersERC20Info'
 import { getTransactionManegerList, networkName } from '../__test_util__/testConfig'
 import { TransactionManager } from '../util/TransactionManager'
 
@@ -52,7 +52,12 @@ const testEntity = () => {
       })
       await entity.newContract("ethersEntity", "tester", "pctest")
       await entity.init()
-      await entity.setRole(await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress()), true)
+      const memberId = await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress())
+      const role0 = await entity.getRole(memberId)
+      expect(role0).toStrictEqual({ manageModule: false })
+      await entity.setRole(memberId, { manageModule: true })
+      const role1 = await entity.getRole(memberId)
+      expect(role1).toStrictEqual({ manageModule: true })
 
       const wallet = new EthersWallet(entity, undefined, {
         transactionManager: transactionManagerList[0]

@@ -8,7 +8,7 @@ import AddressWidget from '../component/addressWidget'
 import WalletDeleteAll from '../component/wallet/walletDeleteAll'
 import NetworkSelectWidget from '../component/wallet/networkSelectWidget'
 import WalletSelectWidget from '../component/wallet/walletSelectWidget'
-
+import { TransactionManager } from '../util/TransactionManager'
 
 import WalletPassword from '../component/wallet/walletPassword'
 import {
@@ -68,11 +68,6 @@ const WalletConnection = (props: {
     } else {
       setWalletInfo({
         type,
-        name: undefined,
-        networkName: undefined,
-        address: undefined,
-        wallet: undefined,
-        error: undefined
       })
     }
   }
@@ -82,11 +77,9 @@ const WalletConnection = (props: {
     if (props.walletInfo.address !== _address) {
       setWalletInfo({
         type: 'Metamask',
-        name: undefined,
         networkName: _networkName,
         address: _address,
-        wallet: _wallet,
-        error: undefined
+        transactionManager: _wallet && new TransactionManager(_wallet),
       })
     }
   }
@@ -136,7 +129,7 @@ const WalletConnection = (props: {
     }
     let name
     let address
-    let wallet
+    let transactionManager
     let error
     if (walletAddress && props.password) {
       const broswerWallet = await walletListLoadAddress(walletAddress, props.password)
@@ -144,11 +137,11 @@ const WalletConnection = (props: {
         if (broswerWallet.pkey) {
           const provider = await getProvider(networkName, setError)
           if (provider) {
-            wallet = new ethers.Wallet(
+            transactionManager = new TransactionManager(new ethers.Wallet(
               broswerWallet.pkey,
               provider
-            )
-            wallet.getBalance().then(setBalance).catch(setError)
+            ))
+            transactionManager.signer.getBalance().then(setBalance).catch(setError)
           }
         }
         name = broswerWallet.name
@@ -160,7 +153,7 @@ const WalletConnection = (props: {
       name,
       networkName,
       address,
-      wallet,
+      transactionManager,
       error
     })
   }
@@ -169,10 +162,6 @@ const WalletConnection = (props: {
     console.error("error : ", _error)
     setWalletInfo({
       type: "Metamask",
-      name: undefined,
-      networkName: undefined,
-      address: undefined,
-      wallet: undefined,
       error: _error
     })
   }

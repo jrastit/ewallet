@@ -7,7 +7,7 @@ const testNetwork = () => {
   it("network connect", async () => {
 
     const walletList = getWalletList()
-    const balance = ethers.utils.formatEther(await provider.getBalance(walletList[0].address))
+    const balance = ethers.utils.formatEther(await provider.getBalance(await walletList[0].getAddress()))
     expect(balance).toBeTruthy()
     //console.log("balance", ethers.utils.formatEther(await provider.getBalance(walletList[0].address)))
   })

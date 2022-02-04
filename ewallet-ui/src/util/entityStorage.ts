@@ -1,23 +1,24 @@
-import { LocalEntity } from '../class/LocalEntity'
-import { ETHEntity } from '../class/ETHEntity'
-import { ethers } from 'ethers'
+import { LocalEntity } from '../contract/local/LocalEntity'
+import { EthersEntity } from '../contract/ethers/EthersEntity'
+import { TransactionManager } from './TransactionManager'
+import { EntityRegistry } from '../contract/model/EntityRegistry'
 
-const entityFromJson = (json: string | null, signer?: ethers.Signer) => {
+const entityFromJson = (json: string | null, transactionManager?: TransactionManager, entityRegistry?: EntityRegistry) => {
   if (json) {
     const props = JSON.parse(json)
     if (props.contractAddress) {
-      const propsSigner = { ...props, signer: signer }
-      return new ETHEntity(propsSigner)
+      const propsSigner = { ...props, transactionManager }
+      return new EthersEntity(entityRegistry, undefined, propsSigner)
     } else {
-      return new LocalEntity(props)
+      return new LocalEntity(entityRegistry, props)
     }
   }
 }
 
-const entityLoad = async (signer?: ethers.Signer) => {
+const entityLoad = async (transactionManager?: TransactionManager, entityRegistry?: EntityRegistry) => {
   let entity
   try {
-    entity = entityFromJson(localStorage.getItem("entity"), signer)
+    entity = entityFromJson(localStorage.getItem("entity"), transactionManager, entityRegistry)
   } catch (error) {
     console.error(error)
     entityDelete()

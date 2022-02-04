@@ -6,7 +6,7 @@ import Nav from 'react-bootstrap/Nav';
 import Button from 'react-bootstrap/Button';
 import {
   Entity,
-} from './class/Entity'
+} from './contract/model/Entity'
 
 import WalletWidget from './component/walletWidget'
 

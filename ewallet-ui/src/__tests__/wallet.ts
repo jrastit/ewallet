@@ -1,5 +1,6 @@
 import * as ethers from 'ethers'
 import { networkName, getTransactionManegerList } from '../__test_util__/testConfig'
+import { entityRegistryLoad } from '../util/entityRegistryStorage'
 
 jest.mock('../contract/contractResource', () => {
   return {
@@ -40,10 +41,10 @@ Object.defineProperty(window, 'localStorage', {
   value: fakeLocalStorage,
 });
 import { TransactionManager } from '../util/TransactionManager'
-import { EthersEntity } from '../class/ethers/EthersEntity'
-import { EthersMember } from '../class/ethers/EthersMember'
-import { EthersWallet } from '../class/ethers/EthersWallet'
-import { EthersEntityRegistry } from '../class/ethers/EthersEntityRegistry'
+import { EthersEntity } from '../contract/ethers/EthersEntity'
+import { EthersMember } from '../module/member/contract/EthersMember'
+import { EthersWallet } from '../module/wallet/contract/EthersWallet'
+import { EthersEntityRegistry } from '../contract/ethers/EthersEntityRegistry'
 
 
 const testWallet = () => {
@@ -71,17 +72,16 @@ const testWallet = () => {
         await entityRegistry.newContract("admin", "jr", "pc")
         await entityRegistry.init()
         entity = await entityRegistry.createEntity("test", "jr", "pc")
-        console.log(entity.toStringObj())
         memberId = await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress())
-        memberModule = await entity.getMemberModule()
+        memberModule = await entity.getModuleMember()
 
-        await entity.setRole(memberId, true)
+        await entity.setRole(memberId, { manageModule: true })
         await entity.addModuleWallet()
         await entity.addModuleERC20Info()
         await entity.addModuleENS()
         walletModule = await entity.getModuleWallet()
         const erc20Info = await entity.getModuleERC20Info()
-        await erc20Info.setRole(memberId, true)
+        await erc20Info.setRole(memberId, { manageToken: true })
         await erc20Info.addERC20Token(
           ethers.constants.AddressZero,
           'ETH',
@@ -124,11 +124,20 @@ const testWallet = () => {
     })
     it('Entity allowance', async () => {
       expect(walletModule.contractAddress).toBeTruthy()
-      await walletModule.setRole(memberId, true)
+      await walletModule.setRole(memberId, { allowanceManager: true })
       await walletModule.setAllowance(memberId, "0.01", "eth")
       await walletModule.setAllowance(memberId, "0", "eth")
       await walletModule.setAllowance(await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress()), "0.01", "eth")
       await walletModule.setAllowance(await entity.getMemberIdFromAddress(await transactionManagerList[0].getAddress()), "0", "eth")
+    })
+    it('storage test', async () => {
+      expect(entityRegistry.contractAddress).toBeTruthy()
+      const entityRegistry2 = await entityRegistryLoad(networkName, undefined, transactionManagerList[0])
+      expect(entityRegistry2).toBeInstanceOf(EthersEntityRegistry)
+      if (entityRegistry2 instanceof EthersEntityRegistry) {
+        expect(entityRegistry2.moduleAdmin).toBeTruthy()
+      }
+
     })
   })
 

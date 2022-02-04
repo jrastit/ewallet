@@ -47,11 +47,11 @@ contract EWalletWallet is IEWalletModule {
 
     /********************** Role *****************************/
 
-    struct EWalletRole {
+    struct EWalletWalletRole {
       bool manageAllowance;
     }
 
-    mapping(uint16 => EWalletRole) private roleList;
+    mapping(uint16 => EWalletWalletRole) private roleList;
 
     modifier roleManageAllowance {
         uint16 memberId = ewallet.getMemberId(msg.sender);
@@ -62,6 +62,10 @@ contract EWalletWallet is IEWalletModule {
     modifier roleManageRole {
         ewallet.checkManageRole(msg.sender);
         _;
+    }
+
+    function getRole (uint16 memberId) public view returns (EWalletWalletRole memory){
+        return roleList[memberId];
     }
 
     /******************** Role Admin *************************/

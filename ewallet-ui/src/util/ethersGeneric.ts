@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
-import { EthersEntity } from '../class/ethers/EthersEntity'
-import { EthersEntityRegistry } from '../class/ethers/EthersEntityRegistry'
+import { EthersEntity } from '../contract/ethers/EthersEntity'
+import { EthersEntityRegistry } from '../contract/ethers/EthersEntityRegistry'
 
 import { TransactionManager } from './TransactionManager'
 
@@ -28,7 +28,8 @@ export const getTransactionManagerEntityRegistry = (
   transactionManager?: TransactionManager,
 ): TransactionManager => {
   return getTransactionManager(item, transactionManager, () => {
-    if (item.entityRegistry ?.transactionManager) return item.entityRegistry.transactionManager
+    if (item.entityRegistry && item.entityRegistry.transactionManager)
+      return item.entityRegistry.transactionManager
   })
 }
 
@@ -40,8 +41,13 @@ export const getTransactionManagerEntity = (
   transactionManager?: TransactionManager,
 ): TransactionManager => {
   return getTransactionManager(item, transactionManager, () => {
-    if (item.entity ?.transactionManager) return item.entity.transactionManager
-    if (item.entity ?.entityRegistry ?.transactionManager) return item.entity.entityRegistry.transactionManager
+    if (item.entity && item.entity.transactionManager)
+      return item.entity.transactionManager
+    if (item.entity &&
+      item.entity.entityRegistry &&
+      item.entity.entityRegistry.transactionManager
+    )
+      return item.entity.entityRegistry.transactionManager
   })
 }
 

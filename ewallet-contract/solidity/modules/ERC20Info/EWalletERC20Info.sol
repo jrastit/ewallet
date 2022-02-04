@@ -195,11 +195,11 @@ contract EWalletERC20Info is IEWalletModule {
 
   /********************** Role *****************************/
 
-  struct EWalletRole {
+  struct EWalletERC20InfoRole {
     bool manageToken;
   }
 
-  mapping(uint16 => EWalletRole) private roleList;
+  mapping(uint16 => EWalletERC20InfoRole) private roleList;
 
   modifier roleManageToken {
       uint16 memberId = ewallet.getMemberId(msg.sender);
@@ -210,6 +210,10 @@ contract EWalletERC20Info is IEWalletModule {
   modifier roleManageRole {
       ewallet.checkManageRole(msg.sender);
       _;
+  }
+
+  function getRole (uint16 memberId) public view returns (EWalletERC20InfoRole memory){
+      return roleList[memberId];
   }
 
   /******************** Role Admin *************************/

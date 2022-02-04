@@ -62,7 +62,7 @@ export class TransactionManager {
       log: transactionItem.log,
       gasUsed: transactionItem.result.gasUsed.toNumber(),
       gasLimit: transactionItem.tx.gasLimit.toNumber(),
-      gasPrice: transactionItem.tx.gasPrice ?.toNumber(),
+      gasPrice: transactionItem.tx.gasPrice && transactionItem.tx.gasPrice.toNumber(),
     }
   }
 

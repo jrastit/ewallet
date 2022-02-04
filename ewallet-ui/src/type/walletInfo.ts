@@ -1,11 +1,11 @@
-import { ethers } from 'ethers'
+import { TransactionManager } from '../util/TransactionManager'
 
 type WalletInfo = {
   type?: string
   name?: string
   networkName?: string
   address?: string
-  wallet?: ethers.Wallet
+  transactionManager?: TransactionManager
   error?: string
 }
 

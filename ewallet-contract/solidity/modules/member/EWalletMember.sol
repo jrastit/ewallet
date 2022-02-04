@@ -38,7 +38,7 @@ contract EWalletMember is IEWalletMember {
 
   struct Member {
     string name;
-    Role role;
+    EWalletMemberRole role;
     bool disable;
     uint16 deviceId;
   }
@@ -187,7 +187,7 @@ contract EWalletMember is IEWalletMember {
 
   /************************ Role *****************************/
 
-  struct Role {
+  struct EWalletMemberRole {
       bool manageRole;
       bool manageMember;
       bool manageSelfMember;
@@ -228,6 +228,10 @@ contract EWalletMember is IEWalletMember {
   function checkManageRole(address _address) checkEnableAddress(_address) public view {
       uint16 memberId = memberListByAddress[_address];
       require(memberList[memberId].role.manageRole, "you are not manager");
+  }
+
+  function getRole (uint16 memberId) public view returns (EWalletMemberRole memory){
+      return memberList[memberId].role;
   }
 
   /************************* Role Admin ************************/

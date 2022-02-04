@@ -3,7 +3,7 @@ import { getTransactionManegerList, constant } from '../__test_util__/testConfig
 
 import { DeployENSRegistry, hash as ENSHash } from '../util/ENS'
 
-import { EthersEntity } from '../class/ethers/EthersEntity'
+import { EthersEntity } from '../contract/ethers/EthersEntity'
 
 import { TransactionManager } from '../util/TransactionManager'
 
@@ -82,7 +82,7 @@ const testERC20Info = () => {
           await entity.getMemberIdFromAddress(
             await transactionManagerList[0].getAddress()
           ),
-          true
+          { manageModule: true }
         )
         const ensContract = await createWithManagerContractEWalletENS(
           entity.getContract(),

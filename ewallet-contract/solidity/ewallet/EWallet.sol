@@ -132,6 +132,10 @@ contract EWallet is IEWallet {
       _;
   }
 
+  function getRole (uint16 memberId) public view returns (EWalletRole memory){
+      return roleList[memberId];
+  }
+
   function isModuleManager (address _address) public view {
       uint16 memberId = getMemberId(_address);
       require(roleList[memberId].manageModule, "not module manager");

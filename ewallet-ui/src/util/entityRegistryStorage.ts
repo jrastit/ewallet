@@ -1,16 +1,17 @@
-import { EntityRegistry, AddEntityToList } from '../class/EntityRegistry'
-import { ethers } from 'ethers'
+import { AddEntityToList } from '../contract/model/EntityRegistry'
+import { TransactionManager } from './TransactionManager'
+import { EthersEntityRegistry } from '../contract/ethers/EthersEntityRegistry'
 
 const entityRegistryFromJson = (
   json: string | null,
-  addEntityToList: AddEntityToList,
-  signer?: ethers.Signer
+  addEntityToList?: AddEntityToList,
+  transactionManager?: TransactionManager
 ) => {
   if (json) {
     const props = JSON.parse(json)
-    return new EntityRegistry({
+    return new EthersEntityRegistry({
       ...props,
-      signer,
+      transactionManager,
       addEntityToList
     })
   }
@@ -20,12 +21,12 @@ const entityRegistryFromAddress = async (
   entityRegistryAddress: string | undefined,
   networkName: string,
   addEntityToList: AddEntityToList,
-  signer?: ethers.Signer,
+  transactionManager?: TransactionManager
 ) => {
   console.log("entityRegistryAddress", entityRegistryAddress)
-  if (entityRegistryAddress && signer) {
-    const entityRegistry = new EntityRegistry({
-      signer,
+  if (entityRegistryAddress && transactionManager) {
+    const entityRegistry = new EthersEntityRegistry({
+      transactionManager,
       networkName,
       contractAddress: entityRegistryAddress,
       addEntityToList,
@@ -43,15 +44,16 @@ const entityRegistryHasCache = (networkName: string) => {
 
 const entityRegistryLoad = async (
   networkName: string,
-  addEntityToList: AddEntityToList,
-  signer?: ethers.Signer
+  addEntityToList?: AddEntityToList,
+  transactionManager?: TransactionManager
 ) => {
   let entityRegistry
   try {
     entityRegistry = entityRegistryFromJson(
       localStorage.getItem("entityRegistry_" + networkName),
       addEntityToList,
-      signer)
+      transactionManager)
+    entityRegistry && await entityRegistry.init()
     return entityRegistry
   } catch (error) {
     console.error(error)

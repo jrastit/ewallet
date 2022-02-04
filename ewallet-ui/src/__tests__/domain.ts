@@ -1,7 +1,7 @@
 import * as ethers from 'ethers'
 import axios from 'axios'
-import { network, getWalletList } from '../__test_util__/testConfig'
-
+import { network, getTransactionManegerList } from '../__test_util__/testConfig'
+import { TransactionManager } from '../util/TransactionManager'
 
 jest.mock('../contract/contractResource', () => {
   return {
@@ -21,14 +21,14 @@ jest.mock('../contract/contractResource', () => {
 
 jest.setTimeout(500000)
 
-let walletList: ethers.Signer[]
+let transactionManagerList: TransactionManager[]
 
 import {
   createDomainChainlinkContract,
 } from '../contract/contractFactory'
 
 import {
-  createContractEWalletDomain,
+  createWithManagerContractEWalletDomain,
   getContractIERC677,
 } from '../contract/solidity/compiled/contractAutoFactory'
 
@@ -64,8 +64,8 @@ const testDomain = () => {
   beforeAll(done => {
     const func_async = (async () => {
       try {
-        walletList = getWalletList()
-        //console.log("Wallet address", await walletList[0].getAddress())
+        transactionManagerList = getTransactionManegerList()
+        //console.log("Wallet address", await transactionManagerList[0].getAddress())
         done()
       } catch (error) {
         console.log(error)
@@ -82,18 +82,18 @@ const testDomain = () => {
       if (network.contractDomainChainlink) {
         linkContract = getContractIERC677(
           network.contractDomainChainlink.linkAddress,
-          walletList[0]
+          transactionManagerList[0].signer
         )
         domainContract = await createDomainChainlinkContract(
           await linkContract.getAddress(),
           network.contractDomainChainlink.oracle,
           network.contractDomainChainlink.jobId,
-          walletList[0],
+          transactionManagerList[0],
         )
       } else {
-        domainContract = await createContractEWalletDomain(
-          await walletList[0].getAddress(),
-          walletList[0],
+        domainContract = await createWithManagerContractEWalletDomain(
+          await transactionManagerList[0].getAddress(),
+          transactionManagerList[0],
         )
       }
       expect(domainContract.address).not.toBeUndefined()
@@ -102,7 +102,7 @@ const testDomain = () => {
       if (network.contractDomainChainlink) {
         expect(linkContract.address).not.toBeUndefined()
         let balanceLink = await linkContract.balanceOf(domainContract.address)
-        const walletBalanceLink = await linkContract.balanceOf(await walletList[0].getAddress())
+        const walletBalanceLink = await linkContract.balanceOf(await transactionManagerList[0].getAddress())
         const fee = ethers.utils.parseUnits('0.01', 18)
         console.log("domain contract balance link", ethers.utils.formatUnits(balanceLink, 18))
         console.log("wallet balance link", ethers.utils.formatUnits(walletBalanceLink, 18))
